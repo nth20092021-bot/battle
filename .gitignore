@@ -1,0 +1,8 @@
+# Independent Minecraft Mod project (has its own git repo)
+pvp-bot-mod/
+mappings/
+pvpbot-1.0.0.jar
+
+# Temp and caches
+.kombai/
+*.log

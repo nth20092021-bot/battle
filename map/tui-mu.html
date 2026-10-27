@@ -1,0 +1,4184 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Game Túi Mù – Trắc Nghiệm Lịch Sử</title>
+  <meta name="description" content="Trang trò chơi Túi Mù trắc nghiệm lịch sử với giao diện phong cảnh Việt Nam và chuyển đổi qua Game UFO.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800;900&family=Nunito:wght@600;700;800;900&family=Paytone+One&display=swap" rel="stylesheet">
+  <style>
+    /* ==========================================================
+       RESET & BASE STYLES
+       ========================================================== */
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: 'Nunito', sans-serif;
+      background-color: #79c55b;
+    }
+
+    /* Container for the whole game viewport */
+    .game-viewport {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    /* ==========================================================
+       SCENIC BACKGROUND (Sky, Sunburst, Pagoda, Hills, Flags)
+       ========================================================== */
+    .sky-bg {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      background: linear-gradient(180deg, 
+        #4ba9e3 0%, 
+        #78c4ed 20%, 
+        #b4e5f7 38%, 
+        #dff3d8 58%, 
+        #9ad668 82%, 
+        #6dc23d 100%);
+    }
+
+    /* Radiating Sunburst behind Title with Gentle Breathing */
+    .sunburst {
+      position: absolute;
+      top: -15%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 140vw;
+      height: 140vw;
+      max-width: 1500px;
+      max-height: 1500px;
+      background: radial-gradient(circle, rgba(255,255,255,0.75) 0%, rgba(255,248,180,0.4) 30%, rgba(255,255,255,0) 65%);
+      pointer-events: none;
+      z-index: 2;
+      animation: sunburstBreathe 7s ease-in-out infinite alternate;
+    }
+
+    @keyframes sunburstBreathe {
+      0% { opacity: 0.82; transform: translateX(-50%) scale(0.96); }
+      100% { opacity: 1; transform: translateX(-50%) scale(1.05); }
+    }
+
+    .sun-rays {
+      position: absolute;
+      top: -300px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 1400px;
+      height: 1400px;
+      background: repeating-conic-gradient(
+        from 0deg,
+        rgba(255, 255, 255, 0.18) 0deg 8deg,
+        rgba(255, 255, 255, 0) 8deg 16deg
+      );
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 2;
+      animation: rotateSlow 140s linear infinite;
+    }
+
+    @keyframes rotateSlow {
+      from { transform: translateX(-50%) rotate(0deg); }
+      to { transform: translateX(-50%) rotate(360deg); }
+    }
+
+    /* ==========================================================
+       ANIMATED SKY ELEMENTS (Clouds, Birds, Flute Kite)
+       ========================================================== */
+    .sky-clouds-wrap {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 60vh;
+      pointer-events: none;
+      z-index: 3;
+      overflow: hidden;
+    }
+
+    .cloud-cluster {
+      position: absolute;
+      pointer-events: none;
+      will-change: transform;
+    }
+
+    .cloud-1 {
+      top: 9%;
+      left: -220px;
+      width: clamp(140px, 16vw, 240px);
+      animation: cloudDriftSlow 75s linear infinite;
+    }
+
+    .cloud-2 {
+      top: 22%;
+      left: -280px;
+      width: clamp(170px, 19vw, 290px);
+      animation: cloudDriftMid 58s linear infinite 14s;
+    }
+
+    .cloud-3 {
+      top: 36%;
+      left: -180px;
+      width: clamp(120px, 13vw, 200px);
+      animation: cloudDriftFast 85s linear infinite 32s;
+    }
+
+    @keyframes cloudDriftSlow {
+      from { transform: translateX(0); }
+      to { transform: translateX(calc(100vw + 420px)); }
+    }
+    @keyframes cloudDriftMid {
+      from { transform: translateX(0); }
+      to { transform: translateX(calc(100vw + 460px)); }
+    }
+    @keyframes cloudDriftFast {
+      from { transform: translateX(0); }
+      to { transform: translateX(calc(100vw + 360px)); }
+    }
+
+    /* Spring Swallows (Đàn chim én mùa xuân chao lượn) */
+    .swallow-flock {
+      position: absolute;
+      top: 14%;
+      left: -120px;
+      pointer-events: none;
+      z-index: 3;
+      animation: flockFlight 34s cubic-bezier(0.35, 0, 0.25, 1) infinite 4s;
+    }
+
+    @keyframes flockFlight {
+      0% {
+        transform: translate(-100px, 50px) scale(0.65);
+        opacity: 0;
+      }
+      10% { opacity: 0.92; }
+      50% {
+        transform: translate(55vw, -35px) scale(0.88);
+        opacity: 0.88;
+      }
+      88% { opacity: 0.85; }
+      100% {
+        transform: translate(calc(100vw + 120px), -65px) scale(0.6);
+        opacity: 0;
+      }
+    }
+
+    .swallow-svg {
+      width: 25px;
+      height: 17px;
+      display: inline-block;
+      filter: drop-shadow(0 2px 5px rgba(0,0,0,0.25));
+      animation: birdWing 0.55s ease-in-out infinite alternate;
+    }
+    .swallow-svg.bird-2 {
+      margin-left: 12px;
+      margin-top: 10px;
+      animation-delay: 0.16s;
+    }
+    .swallow-svg.bird-3 {
+      margin-left: 8px;
+      margin-top: -8px;
+      animation-delay: 0.3s;
+    }
+
+    @keyframes birdWing {
+      0% { transform: scaleY(0.72) rotate(-3deg); }
+      100% { transform: scaleY(1.22) rotate(4deg); }
+    }
+
+    /* Traditional Vietnamese Flute Kite (Cánh diều sáo truyền thống) */
+    .flying-kite-wrap {
+      position: absolute;
+      top: 16%;
+      left: 11vw;
+      width: clamp(75px, 8.5vw, 118px);
+      height: auto;
+      z-index: 3;
+      pointer-events: none;
+      animation: kiteHover 7.5s ease-in-out infinite alternate;
+      transform-origin: top center;
+    }
+
+    @keyframes kiteHover {
+      0% {
+        transform: translate(0, 0) rotate(-6deg);
+      }
+      50% {
+        transform: translate(18px, -20px) rotate(5deg);
+      }
+      100% {
+        transform: translate(-14px, -10px) rotate(-4deg);
+      }
+    }
+
+    .kite-tail-1, .kite-tail-2, .kite-tail-3 {
+      animation: tailWave 2.8s ease-in-out infinite alternate;
+      transform-origin: top center;
+    }
+    .kite-tail-2 { animation-delay: 0.45s; }
+    .kite-tail-3 { animation-delay: 0.9s; }
+
+    @keyframes tailWave {
+      0% { transform: scaleX(0.85) skewX(-5deg); }
+      100% { transform: scaleX(1.15) skewX(7deg); }
+    }
+
+    /* Distant mountain backdrop */
+    .mountains-svg {
+      position: absolute;
+      bottom: 21vh;
+      left: 0;
+      width: 100%;
+      height: 42vh;
+      z-index: 4;
+      pointer-events: none;
+    }
+
+    /* Rolling valley mist layer */
+    .mist-layer {
+      position: absolute;
+      bottom: 22vh;
+      left: 0;
+      width: 100%;
+      height: 14vh;
+      z-index: 5;
+      pointer-events: none;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(225, 248, 238, 0.42) 50%, rgba(255, 255, 255, 0) 100%);
+      animation: mistDrift 14s ease-in-out infinite alternate;
+    }
+
+    @keyframes mistDrift {
+      0% { transform: translateX(-2%) scaleY(0.92); opacity: 0.45; }
+      100% { transform: translateX(2%) scaleY(1.18); opacity: 0.72; }
+    }
+
+    /* Left Heritage Scenery (Bamboo Grove, Lotus Pond, Spring Blossoms) */
+    .heritage-scenery-left {
+      position: absolute;
+      bottom: 8vh;
+      left: 0;
+      width: clamp(260px, 32vw, 480px);
+      height: auto;
+      z-index: 6;
+      pointer-events: none;
+      filter: drop-shadow(0 14px 24px rgba(22, 55, 15, 0.34));
+    }
+
+    .bamboo-cluster {
+      transform-origin: bottom center;
+      animation: bambooBreeze 7s ease-in-out infinite alternate;
+    }
+    @keyframes bambooBreeze {
+      0% { transform: rotate(0deg); }
+      50% { transform: rotate(1.5deg) skewX(0.8deg); }
+      100% { transform: rotate(-0.9deg) skewX(-0.5deg); }
+    }
+
+    .peach-branch-group {
+      transform-origin: 0% 50%;
+      animation: peachSway 5.5s ease-in-out infinite alternate;
+    }
+    @keyframes peachSway {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(2deg); }
+    }
+
+    /* Vietnamese Temple Gate / Pagoda on Right */
+    .pagoda-gate {
+      position: absolute;
+      right: 2vw;
+      bottom: 18vh;
+      width: clamp(240px, 28vw, 420px);
+      height: auto;
+      z-index: 7;
+      pointer-events: none;
+      filter: drop-shadow(0 15px 25px rgba(28, 60, 15, 0.35));
+    }
+
+    /* Red Silk Lanterns swaying on the Pagoda Gate */
+    .pagoda-lantern {
+      transform-origin: top center;
+      animation: lanternSwing 3.6s ease-in-out infinite alternate;
+    }
+    .pagoda-lantern.right-lantern {
+      animation-delay: 0.85s;
+    }
+    @keyframes lanternSwing {
+      0% { transform: rotate(-8deg); }
+      100% { transform: rotate(8deg); }
+    }
+
+    /* Grassy rolling foreground */
+    .foreground-grass {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 38vh;
+      z-index: 7;
+      pointer-events: none;
+    }
+
+    /* ==========================================================
+       POETIC ANIMATED MOUNTAIN STREAM (CON SUỐI ĐỘNG GIÀU CHẤT THƠ)
+       ========================================================== */
+    .poetic-stream-svg {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 38vh;
+      z-index: 8;
+      pointer-events: none;
+      overflow: visible;
+    }
+
+    /* Flowing water current ripples */
+    .stream-flow-1 {
+      stroke-dasharray: 22 40;
+      animation: streamFlowMotion 3.4s linear infinite;
+    }
+    .stream-flow-2 {
+      stroke-dasharray: 18 34;
+      animation: streamFlowMotion 2.6s linear infinite;
+    }
+    .stream-flow-3 {
+      stroke-dasharray: 26 44;
+      animation: streamFlowMotion 4.2s linear infinite;
+    }
+
+    @keyframes streamFlowMotion {
+      from { stroke-dashoffset: 180; }
+      to { stroke-dashoffset: 0; }
+    }
+
+    /* Sunlight glints shimmering on water */
+    .stream-sparkle {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: streamGlintPulse 2.6s ease-in-out infinite alternate;
+    }
+    .stream-sparkle.d1 { animation-delay: 0.2s; }
+    .stream-sparkle.d2 { animation-delay: 1.1s; }
+    .stream-sparkle.d3 { animation-delay: 1.9s; }
+
+    @keyframes streamGlintPulse {
+      0%, 100% {
+        opacity: 0.25;
+        transform: scale(0.65) rotate(0deg);
+      }
+      50% {
+        opacity: 0.95;
+        transform: scale(1.25) rotate(45deg);
+      }
+    }
+
+    /* Drifting flower petals floating on stream */
+    .stream-petal {
+      animation: streamPetalDrift 4.5s ease-in-out infinite alternate;
+    }
+    .stream-petal.p2 { animation-delay: 1.3s; animation-duration: 3.8s; }
+    .stream-petal.p3 { animation-delay: 2.2s; animation-duration: 5s; }
+
+    @keyframes streamPetalDrift {
+      0% {
+        transform: translate(0, 0) rotate(-8deg);
+      }
+      100% {
+        transform: translate(10px, 5px) rotate(14deg);
+      }
+    }
+
+    /* Spring Butterflies (Bướm xuân chao lượn) */
+    .butterfly-wrap {
+      position: absolute;
+      bottom: 24vh;
+      left: 36vw;
+      width: 32px;
+      height: 32px;
+      pointer-events: none;
+      z-index: 9;
+      animation: butterflyFlight 18s ease-in-out infinite;
+    }
+
+    @keyframes butterflyFlight {
+      0% { transform: translate(0, 0) scale(0.9); }
+      25% { transform: translate(60px, -35px) scale(1.05) rotate(15deg); }
+      50% { transform: translate(140px, -15px) scale(0.85) rotate(-10deg); }
+      75% { transform: translate(80px, -60px) scale(1) rotate(20deg); }
+      100% { transform: translate(0, 0) scale(0.9); }
+    }
+
+    .butterfly-svg {
+      width: 26px;
+      height: 26px;
+      animation: butterflyFlap 0.28s ease-in-out infinite alternate;
+      transform-origin: center center;
+    }
+    @keyframes butterflyFlap {
+      0% { transform: scaleX(0.3) rotate(-5deg); }
+      100% { transform: scaleX(1.1) rotate(5deg); }
+    }
+
+    /* Buntings & Vietnamese 5-Color Festival Flags */
+    .festive-decorations {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 45vh;
+      z-index: 9;
+      pointer-events: none;
+    }
+
+    /* Ambient Sparks & Falling Petals Canvas */
+    .ambient-sparks {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    /* ==========================================================
+       TOP BAR (Badges, Buttons)
+       ========================================================== */
+    .top-bar {
+      position: relative;
+      z-index: 20;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 24px;
+      width: 100%;
+    }
+
+    /* Brown pill badges on left */
+    .stats-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .stat-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(180deg, #6b401f 0%, #46250f 100%);
+      border: 2px solid #b8863b;
+      border-radius: 50px;
+      padding: 5px 16px 5px 12px;
+      color: #ffffff;
+      font-family: 'Baloo 2', cursive;
+      font-size: 17px;
+      font-weight: 800;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.35), inset 0 1px 1px rgba(255,255,255,0.25);
+    }
+
+    .stat-icon {
+      font-size: 16px;
+      filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4));
+    }
+
+    .stat-val {
+      color: #fff9e6;
+      letter-spacing: 0.5px;
+    }
+
+    /* Navigation buttons on right (TRANG CHỦ, HƯỚNG DẪN) */
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .wood-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      justify-content: center;
+      padding: 7px 16px;
+      background: linear-gradient(180deg, #7c481d 0%, #522c0d 100%);
+      border: 2px solid #c29548;
+      border-radius: 50px;
+      color: #ffffff;
+      font-family: 'Baloo 2', cursive;
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 0.6px;
+      cursor: pointer;
+      text-transform: uppercase;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.25);
+      transition: all 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .wood-btn:hover {
+      background: linear-gradient(180deg, #8f5322 0%, #613410 100%);
+      border-color: #ffd700;
+      transform: translateY(-2px) scale(1.03);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.4), 0 0 12px rgba(255, 215, 0, 0.4);
+    }
+
+    .wood-btn:active {
+      transform: translateY(1px) scale(0.98);
+    }
+
+    /* ==========================================================
+       MAIN TITLE ("GAME TÚI MÙ") & UNIFIED FESTIVE CANOPY BANNER
+       ========================================================== */
+    .title-container {
+      position: absolute;
+      top: clamp(28px, 4.2vh, 52px);
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 15;
+      text-align: center;
+      pointer-events: none;
+      width: min(98vw, 1380px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .title-banner-svg {
+      width: 100%;
+      height: auto;
+      max-height: 25vh;
+      display: block;
+      overflow: visible;
+      filter: drop-shadow(0 14px 28px rgba(42, 13, 2, 0.48));
+      animation: titleFloat 3.4s ease-in-out infinite;
+    }
+
+    @keyframes titleFloat {
+      0%, 100% {
+        transform: translateY(0) scale(1);
+      }
+      50% {
+        transform: translateY(-8px) scale(1.015);
+      }
+    }
+
+    /* Slogan tag below title */
+    .title-subtag {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: -6px;
+      padding: 6px 26px;
+      background: linear-gradient(135deg, rgba(82, 39, 9, 0.94) 0%, rgba(45, 20, 4, 0.96) 100%);
+      border: 2px solid #ffd54f;
+      border-radius: 50px;
+      color: #fff9c4;
+      font-family: 'Baloo 2', cursive;
+      font-size: clamp(12.5px, 1.3vw, 16px);
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.4), 0 0 16px rgba(255, 213, 79, 0.35);
+      animation: subtagPulse 3s ease-in-out infinite alternate;
+      pointer-events: all;
+    }
+
+    @keyframes subtagPulse {
+      0% {
+        transform: scale(0.98);
+        box-shadow: 0 4px 14px rgba(0,0,0,0.4), 0 0 12px rgba(255, 213, 79, 0.25);
+      }
+      100% {
+        transform: scale(1.02);
+        box-shadow: 0 6px 18px rgba(0,0,0,0.45), 0 0 22px rgba(255, 213, 79, 0.55);
+        border-color: #ffffff;
+      }
+    }
+
+    /* ==========================================================
+       MODERN HYPERSPACE UFO TRANSITION ANIMATION
+       ========================================================== */
+    .ufo-hyper-warp {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      background: radial-gradient(circle at center, #18093d 0%, #08021c 65%, #020008 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      overflow: hidden;
+      transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .ufo-hyper-warp.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    /* Hyper-speed warp star tunnel lines */
+    .warp-tunnel-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    /* Central Cinematic UFO */
+    .warp-ufo-craft {
+      position: relative;
+      z-index: 20;
+      width: clamp(250px, 32vw, 440px);
+      filter: drop-shadow(0 20px 40px rgba(0, 229, 255, 0.5));
+      transform: translateY(-260px) scale(0.3) rotate(-20deg);
+      opacity: 0;
+    }
+
+    .ufo-hyper-warp.active .warp-ufo-craft {
+      animation: ufoSwoopIn 1.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    }
+
+    @keyframes ufoSwoopIn {
+      0% {
+        transform: translateY(-280px) scale(0.3) rotate(-20deg);
+        opacity: 0;
+      }
+      30% {
+        transform: translateY(15px) scale(1.05) rotate(5deg);
+        opacity: 1;
+      }
+      55% {
+        transform: translateY(-10px) scale(1) rotate(-3deg);
+        opacity: 1;
+      }
+      85% {
+        transform: translateY(0) scale(1.1) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: scale(2.8) translateY(60px);
+        opacity: 0.95;
+      }
+    }
+
+    /* Expanding Holographic Sonic Energy Rings */
+    .warp-energy-ring {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      border: 4px solid #00e5ff;
+      border-radius: 50%;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .ufo-hyper-warp.active .warp-energy-ring:nth-child(2) {
+      animation: energyPulse 1.2s ease-out infinite 0.15s;
+    }
+    .ufo-hyper-warp.active .warp-energy-ring:nth-child(3) {
+      animation: energyPulse 1.2s ease-out infinite 0.45s;
+    }
+    .ufo-hyper-warp.active .warp-energy-ring:nth-child(4) {
+      animation: energyPulse 1.2s ease-out infinite 0.75s;
+    }
+
+    @keyframes energyPulse {
+      0% {
+        width: 60px;
+        height: 60px;
+        opacity: 0.9;
+        border-color: #76ff03;
+        transform: translate(-50%, -50%) scale(1);
+      }
+      100% {
+        width: 720px;
+        height: 720px;
+        opacity: 0;
+        border-color: #00e5ff;
+        transform: translate(-50%, -50%) scale(1.6);
+      }
+    }
+
+    /* Tractor Beam Laser */
+    .warp-laser-beam {
+      position: absolute;
+      top: 48%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 60vh;
+      background: linear-gradient(180deg, rgba(0, 229, 255, 0.8) 0%, rgba(118, 255, 3, 0.5) 50%, rgba(0, 229, 255, 0) 100%);
+      clip-path: polygon(45% 0%, 55% 0%, 100% 100%, 0% 100%);
+      opacity: 0;
+      z-index: 15;
+    }
+
+    .ufo-hyper-warp.active .warp-laser-beam {
+      animation: laserBlast 1.35s ease-out forwards 0.25s;
+    }
+
+    @keyframes laserBlast {
+      0% { width: 0; opacity: 0; }
+      30% { width: clamp(200px, 35vw, 450px); opacity: 0.9; }
+      75% { width: clamp(280px, 45vw, 600px); opacity: 0.95; }
+      100% { width: 100vw; opacity: 1; }
+    }
+
+    /* Modern Sci-Fi Text Banner */
+    .warp-banner {
+      position: absolute;
+      bottom: 11vh;
+      z-index: 30;
+      text-align: center;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    .ufo-hyper-warp.active .warp-banner {
+      animation: bannerFadeUp 0.6s ease forwards 0.35s;
+    }
+
+    @keyframes bannerFadeUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .warp-title {
+      font-family: 'Baloo 2', cursive;
+      font-size: clamp(22px, 3vw, 36px);
+      font-weight: 900;
+      color: #00e5ff;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      text-shadow: 0 0 15px rgba(0, 229, 255, 0.8), 0 0 30px rgba(0, 229, 255, 0.5);
+      margin-bottom: 6px;
+    }
+
+    .warp-subtitle {
+      font-family: 'Nunito', sans-serif;
+      font-size: clamp(14px, 1.8vw, 19px);
+      font-weight: 800;
+      color: #fff9c4;
+      letter-spacing: 1px;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+    }
+
+    /* Hyperdrive Flash Screen at End */
+    .warp-flash {
+      position: absolute;
+      inset: 0;
+      z-index: 50;
+      background: #ffffff;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .ufo-hyper-warp.active .warp-flash {
+      animation: flashBurst 0.35s ease-out forwards 1.15s;
+    }
+
+    @keyframes flashBurst {
+      0% { opacity: 0; }
+      50% { opacity: 1; }
+      100% { opacity: 1; }
+    }
+
+    /* Return toast notification */
+    .welcome-toast {
+      position: fixed;
+      top: 85px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-30px);
+      z-index: 1000;
+      background: linear-gradient(135deg, #4a148c 0%, #8e24aa 100%);
+      border: 3px solid #ffd54f;
+      border-radius: 50px;
+      padding: 10px 26px;
+      color: #ffffff;
+      font-family: 'Baloo 2', cursive;
+      font-size: 18px;
+      font-weight: 800;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .welcome-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ==========================================================
+       THE 5 MYSTERY BAGS (TÚI MÙ)
+       ========================================================== */
+    .bags-stage {
+      position: relative;
+      z-index: 12;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      gap: clamp(14px, 2.2vw, 42px);
+      margin-bottom: clamp(65px, 12vh, 105px);
+      padding: 0 20px;
+    }
+
+    /* Bag wrapper with floating shadow below */
+    .bag-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      cursor: pointer;
+      transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease;
+      transform-origin: bottom center;
+      animation: bagIdleBob 3.6s ease-in-out infinite;
+    }
+
+    #bag-1 { animation-delay: 0s; }
+    #bag-2 { animation-delay: 0.5s; }
+    #bag-3 { animation-delay: 1.0s; }
+    #bag-4 { animation-delay: 1.5s; }
+    #bag-5 { animation-delay: 2.0s; }
+
+    @keyframes bagIdleBob {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-11px); }
+    }
+
+    .bag-item:hover:not(.opened) {
+      animation-play-state: paused;
+      transform: translateY(-20px) scale(1.08) !important;
+    }
+
+    .bag-item:active:not(.opened) {
+      transform: translateY(-8px) scale(1.02) !important;
+    }
+
+    .bag-item.opened {
+      pointer-events: none;
+      animation: bagVanish 0.5s ease forwards;
+    }
+
+    /* ==========================================================
+       CONTOURED GLOWING AURA & TWINKLING STAR SPARKLES
+       ========================================================== */
+    .bag-aura {
+      position: absolute;
+      top: 48%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 116%;
+      height: 108%;
+      border-radius: 45px;
+      pointer-events: none;
+      z-index: -1;
+      opacity: 0.68;
+      filter: blur(14px);
+      transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+      animation: bagAuraGlow 3s ease-in-out infinite alternate;
+    }
+
+    /* Soft inner glowing rim */
+    .bag-aura::after {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      border-radius: 46px;
+      border: 2.5px solid var(--aura-ring, #ffd700);
+      opacity: 0.6;
+      filter: blur(5px);
+      box-shadow: 0 0 16px var(--aura-ring, #ffd700);
+      transition: all 0.22s ease;
+    }
+
+    @keyframes bagAuraGlow {
+      0% {
+        transform: translate(-50%, -50%) scale(0.98);
+        opacity: 0.6;
+        filter: blur(12px);
+      }
+      100% {
+        transform: translate(-50%, -50%) scale(1.04);
+        opacity: 0.85;
+        filter: blur(16px);
+      }
+    }
+
+    /* Specific vibrant glowing colors for each bag (vừa vặn, không quá to) */
+    #bag-1 .bag-aura {
+      background: radial-gradient(ellipse at center, rgba(206, 147, 216, 0.95) 0%, rgba(142, 36, 170, 0.75) 45%, rgba(74, 20, 140, 0.35) 75%, transparent 88%);
+      --aura-ring: #ea80fc;
+      animation-delay: 0s;
+    }
+    #bag-2 .bag-aura {
+      background: radial-gradient(ellipse at center, rgba(255, 128, 171, 0.95) 0%, rgba(233, 30, 99, 0.75) 45%, rgba(136, 14, 79, 0.35) 75%, transparent 88%);
+      --aura-ring: #ff4081;
+      animation-delay: 0.6s;
+    }
+    #bag-3 .bag-aura {
+      background: radial-gradient(ellipse at center, rgba(132, 255, 255, 0.95) 0%, rgba(0, 188, 212, 0.75) 45%, rgba(0, 96, 100, 0.35) 75%, transparent 88%);
+      --aura-ring: #00e5ff;
+      animation-delay: 1.2s;
+    }
+    #bag-4 .bag-aura {
+      background: radial-gradient(ellipse at center, rgba(255, 238, 88, 0.95) 0%, rgba(255, 160, 0, 0.75) 45%, rgba(230, 81, 0, 0.35) 75%, transparent 88%);
+      --aura-ring: #ffd600;
+      animation-delay: 1.8s;
+    }
+    #bag-5 .bag-aura {
+      background: radial-gradient(ellipse at center, rgba(255, 138, 128, 0.95) 0%, rgba(244, 67, 54, 0.75) 45%, rgba(183, 28, 28, 0.35) 75%, transparent 88%);
+      --aura-ring: #ff5252;
+      animation-delay: 2.4s;
+    }
+
+    /* Hover effect */
+    .bag-item:hover:not(.opened) .bag-aura {
+      opacity: 0.88;
+      transform: translate(-50%, -50%) scale(1.07);
+      filter: blur(15px) brightness(1.15);
+    }
+
+    /* Khi ấn vào / click: Hào quang bùng lớn hơn 1 xíu */
+    .bag-item:active:not(.opened) .bag-aura,
+    .bag-item.clicked .bag-aura {
+      transform: translate(-50%, -50%) scale(1.18) !important;
+      opacity: 1 !important;
+      filter: blur(18px) brightness(1.35) !important;
+      transition: all 0.15s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    }
+
+    .bag-item:active:not(.opened) .bag-aura::after,
+    .bag-item.clicked .bag-aura::after {
+      opacity: 0.95 !important;
+      box-shadow: 0 0 24px var(--aura-ring, #ffd700) !important;
+    }
+
+    .bag-item.opened .bag-aura {
+      display: none !important;
+    }
+
+    /* Twinkling Star Sparkles around each bag */
+    .bag-stars {
+      position: absolute;
+      inset: -12px -16px;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .bag-star {
+      position: absolute;
+      display: inline-block;
+      line-height: 1;
+      font-size: 16px;
+      color: #fff9c4;
+      text-shadow: 0 0 6px #ffffff, 0 0 12px #ffd700;
+      opacity: 0;
+      transform: scale(0.2) rotate(0deg);
+      animation: starTwinkle 2.8s ease-in-out infinite;
+      user-select: none;
+      transition: transform 0.2s ease, opacity 0.2s ease;
+    }
+
+    /* Star positions around the pouch */
+    .bag-star.s1 { top: 10%; left: -6px; font-size: 17px; animation-delay: 0s; }
+    .bag-star.s2 { top: 6%; right: 0px; font-size: 14px; animation-delay: 0.8s; }
+    .bag-star.s3 { top: 48%; right: -12px; font-size: 18px; animation-delay: 1.5s; }
+    .bag-star.s4 { bottom: 22%; left: -10px; font-size: 15px; animation-delay: 2.1s; }
+    .bag-star.s5 { bottom: 10%; right: -4px; font-size: 13px; animation-delay: 1.1s; }
+
+    /* Custom star tint matching bag theme */
+    #bag-1 .bag-star { color: #f3e5f5; text-shadow: 0 0 6px #ffffff, 0 0 14px #e040fb; }
+    #bag-2 .bag-star { color: #fce4ec; text-shadow: 0 0 6px #ffffff, 0 0 14px #ff4081; }
+    #bag-3 .bag-star { color: #e0f7fa; text-shadow: 0 0 6px #ffffff, 0 0 14px #00e5ff; }
+    #bag-4 .bag-star { color: #fffde7; text-shadow: 0 0 6px #ffffff, 0 0 14px #ffd600; }
+    #bag-5 .bag-star { color: #ffebee; text-shadow: 0 0 6px #ffffff, 0 0 14px #ff5252; }
+
+    @keyframes starTwinkle {
+      0%, 100% {
+        opacity: 0;
+        transform: scale(0.2) rotate(0deg);
+      }
+      35%, 65% {
+        opacity: 0.95;
+        transform: scale(1.18) rotate(45deg);
+      }
+    }
+
+    .bag-item:hover:not(.opened) .bag-star {
+      animation-duration: 1.8s;
+    }
+
+    .bag-item:active:not(.opened) .bag-star,
+    .bag-item.clicked .bag-star {
+      transform: scale(1.35) rotate(45deg) !important;
+      opacity: 1 !important;
+      filter: brightness(1.4) !important;
+    }
+
+    .bag-item.opened .bag-stars {
+      display: none !important;
+    }
+
+    /* Interactive hint badge */
+    .bag-hint-badge {
+      margin-top: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 14px;
+      border-radius: 30px;
+      background: linear-gradient(180deg, #ffca28 0%, #ff8f00 100%);
+      color: #3e1b00;
+      font-family: 'Baloo 2', cursive;
+      font-size: 13px;
+      font-weight: 800;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      border: 1.5px solid #fff9c4;
+      opacity: 0.88;
+      transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+      letter-spacing: 0.5px;
+    }
+    .bag-item:hover:not(.opened) .bag-hint-badge {
+      opacity: 1;
+      transform: scale(1.15) translateY(-2px);
+      background: linear-gradient(180deg, #fff176 0%, #ffa000 100%);
+      box-shadow: 0 6px 14px rgba(0,0,0,0.4), 0 0 14px rgba(255,213,79,0.7);
+    }
+
+    /* Ambient Sparks Canvas */
+    .ambient-sparks {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 8;
+      pointer-events: none;
+    }
+
+    @keyframes bagVanish {
+      0% { transform: scale(1); opacity: 1; filter: brightness(1.5); }
+      50% { transform: scale(1.2) translateY(-20px); opacity: 0.8; filter: brightness(2); }
+      100% { transform: scale(0.2) translateY(50px); opacity: 0; }
+    }
+
+    /* Number Label above each bag (#1, #2, ...) */
+    .bag-number {
+      font-family: 'Baloo 2', cursive;
+      font-size: clamp(26px, 3.2vw, 42px);
+      font-weight: 900;
+      color: #ffd428;
+      text-shadow: 
+        2px 2px 0 #522709,
+        -2px -2px 0 #522709,
+        2px -2px 0 #522709,
+        -2px 2px 0 #522709,
+        0 4px 6px rgba(0,0,0,0.5);
+      margin-bottom: 8px;
+      line-height: 1;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+      transition: transform 0.2s ease;
+    }
+
+    .bag-item:hover:not(.opened) .bag-number {
+      transform: scale(1.15);
+      color: #fff066;
+    }
+
+    /* Bag body wrapper */
+    .bag-body-art {
+      position: relative;
+      width: clamp(140px, 14.5vw, 220px);
+      height: clamp(195px, 20vw, 310px);
+      filter: drop-shadow(0 14px 20px rgba(12, 38, 8, 0.45));
+      transition: filter 0.25s ease;
+    }
+
+    .bag-item:hover:not(.opened) .bag-body-art {
+      filter: drop-shadow(0 22px 30px rgba(12, 38, 8, 0.6)) brightness(1.05);
+    }
+
+    .bag-body-art svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Soft ground shadow beneath each bag */
+    .bag-ground-shadow {
+      position: absolute;
+      bottom: -18px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 78%;
+      height: 18px;
+      background: radial-gradient(ellipse at center, rgba(16, 48, 8, 0.62) 0%, rgba(16, 48, 8, 0.25) 50%, rgba(16, 48, 8, 0) 75%);
+      border-radius: 50%;
+      pointer-events: none;
+      transition: transform 0.25s ease, opacity 0.25s ease;
+    }
+
+    .bag-item:hover:not(.opened) .bag-ground-shadow {
+      transform: translateX(-50%) scale(0.85);
+      opacity: 0.45;
+    }
+
+    /* Pulsing glowing question mark in the bag center */
+    .bag-qmark {
+      position: absolute;
+      top: 55%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: 'Baloo 2', sans-serif;
+      font-size: clamp(48px, 5.5vw, 76px);
+      font-weight: 900;
+      color: #ffffff;
+      text-shadow: 
+        0 0 10px rgba(255, 255, 255, 0.9),
+        0 0 25px currentColor;
+      pointer-events: none;
+      animation: markGlow 2.5s ease-in-out infinite;
+    }
+
+    @keyframes markGlow {
+      0%, 100% {
+        transform: translate(-50%, -50%) scale(1);
+        filter: drop-shadow(0 0 6px rgba(255,255,255,0.7));
+      }
+      50% {
+        transform: translate(-50%, -50%) scale(1.12);
+        filter: drop-shadow(0 0 16px rgba(255,255,255,1));
+      }
+    }
+
+    /* Specific Question Mark Colors per Bag */
+    #bag-1 .bag-qmark { color: #fff8d6; text-shadow: 0 0 12px #ffe57f, 0 0 26px #ffab00; }
+    #bag-2 .bag-qmark { color: #ffffff; text-shadow: 0 0 12px #ff80ab, 0 0 26px #f50057; }
+    #bag-3 .bag-qmark { color: #e0f7fa; text-shadow: 0 0 12px #84ffff, 0 0 26px #00b0ff; }
+    #bag-4 .bag-qmark { color: #fff9c4; text-shadow: 0 0 12px #ffee58, 0 0 26px #fbc02d; }
+    #bag-5 .bag-qmark { color: #ffffff; text-shadow: 0 0 12px #f8bbd0, 0 0 26px #ec407a; }
+
+    /* ==========================================================
+       BOTTOM RIGHT BUTTON ("Chuyển qua Game UFO")
+       ========================================================== */
+    .bottom-bar {
+      position: absolute;
+      bottom: 22px;
+      right: 28px;
+      z-index: 25;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    /* The glowing ornate Game UFO button */
+    .ufo-switch-btn {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 28px 10px 18px;
+      background: linear-gradient(180deg, #ff9f1a 0%, #eb6b02 52%, #b53e00 100%);
+      border: 4px solid #fce074;
+      border-radius: 60px;
+      box-shadow: 
+        0 6px 0 #5c2405,
+        0 12px 24px rgba(45, 18, 4, 0.45),
+        inset 0 2px 4px rgba(255, 255, 255, 0.5),
+        inset 0 -2px 6px rgba(0, 0, 0, 0.3);
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      overflow: visible;
+      animation: ufoBtnPulse 2.8s ease-in-out infinite;
+    }
+
+    @keyframes ufoBtnPulse {
+      0%, 100% {
+        box-shadow: 0 6px 0 #5c2405, 0 12px 24px rgba(45, 18, 4, 0.45), 0 0 0 rgba(255, 159, 26, 0);
+      }
+      50% {
+        box-shadow: 0 6px 0 #5c2405, 0 14px 28px rgba(45, 18, 4, 0.55), 0 0 24px rgba(255, 214, 0, 0.7);
+      }
+    }
+
+    .ufo-badge-hot {
+      position: absolute;
+      top: -12px;
+      right: 18px;
+      background: linear-gradient(135deg, #e91e63 0%, #c2185b 100%);
+      color: #ffffff;
+      font-family: 'Baloo 2', cursive;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.6px;
+      padding: 2px 10px;
+      border-radius: 20px;
+      border: 2px solid #ffffff;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+      animation: badgeBounce 1.8s ease-in-out infinite alternate;
+      pointer-events: none;
+    }
+
+    @keyframes badgeBounce {
+      0% { transform: translateY(0) rotate(-3deg); }
+      100% { transform: translateY(-4px) rotate(3deg); }
+    }
+
+    .ufo-switch-btn:hover {
+      transform: translateY(-4px) scale(1.04);
+      background: linear-gradient(180deg, #ffaf38 0%, #f77a0c 52%, #c94600 100%);
+      border-color: #ffffff;
+      box-shadow: 
+        0 9px 0 #5c2405,
+        0 18px 30px rgba(45, 18, 4, 0.55),
+        inset 0 3px 6px rgba(255, 255, 255, 0.6);
+    }
+
+    .ufo-switch-btn:active {
+      transform: translateY(2px) scale(0.99);
+      box-shadow: 
+        0 3px 0 #5c2405,
+        0 6px 14px rgba(45, 18, 4, 0.4);
+    }
+
+    /* Cute UFO Icon illustration in button */
+    .btn-ufo-icon {
+      width: 48px;
+      height: 44px;
+      flex-shrink: 0;
+      filter: drop-shadow(0 3px 6px rgba(0,0,0,0.35));
+      animation: ufoHover 2.2s ease-in-out infinite alternate;
+    }
+
+    @keyframes ufoHover {
+      0% { transform: translateY(-2px) rotate(-4deg); }
+      100% { transform: translateY(3px) rotate(4deg); }
+    }
+
+    /* Button Text: 2 lines */
+    .btn-text-box {
+      display: flex;
+      flex-direction: column;
+      text-align: left;
+    }
+
+    .btn-line-1 {
+      font-family: 'Baloo 2', cursive;
+      font-size: 17px;
+      font-weight: 800;
+      color: #fff9e6;
+      line-height: 1.1;
+      text-shadow: 1px 1px 2px #572004;
+    }
+
+    .btn-line-2 {
+      font-family: 'Baloo 2', cursive;
+      font-size: 21px;
+      font-weight: 900;
+      color: #ffffff;
+      line-height: 1.1;
+      text-shadow: 2px 2px 0 #572004, -1px -1px 0 #572004;
+      letter-spacing: 0.5px;
+    }
+
+    /* Left Replay button for teacher */
+    .replay-btn {
+      position: absolute;
+      bottom: 22px;
+      left: 28px;
+      z-index: 25;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      background: linear-gradient(180deg, #4caf50 0%, #2e7d32 100%);
+      border: 3px solid #a5d6a7;
+      border-radius: 50px;
+      color: #ffffff;
+      font-family: 'Baloo 2', cursive;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 5px 0 #1b5e20, 0 8px 16px rgba(0,0,0,0.3);
+      transition: all 0.18s ease;
+    }
+
+    .replay-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 7px 0 #1b5e20, 0 12px 20px rgba(0,0,0,0.35);
+      background: linear-gradient(180deg, #5cba60 0%, #388e3c 100%);
+    }
+
+    .replay-btn:active {
+      transform: translateY(2px);
+      box-shadow: 0 2px 0 #1b5e20;
+    }
+
+    /* ==========================================================
+       QUIZ MODAL (MATCHING REFERENCE IMAGE 2)
+       ========================================================== */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: rgba(14, 28, 12, 0.65);
+      backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      padding: 16px;
+    }
+
+    /* ==========================================================
+       SEAMLESS EMBEDDED UFO GAME VIEWPORT (NO FULLSCREEN LOSS)
+       ========================================================== */
+    .ufo-embedded-container {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 9990;
+      background: #000000;
+      display: none;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+
+    .ufo-embedded-container.active {
+      display: block;
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .ufo-embedded-frame {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+      background: #000000;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    /* Modal Wrapper holding Top Crest & Wooden Board */
+    .quiz-board-wrapper {
+      position: relative;
+      width: min(95vw, 960px);
+      max-height: 94vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 52px;
+      box-sizing: border-box;
+      transform: scale(0.85) translateY(20px);
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+      overflow: visible;
+    }
+
+    .modal-overlay.active .quiz-board-wrapper {
+      transform: scale(1) translateY(0);
+    }
+
+    /* Bursting Open Bag Crest on Top Center of Board - Positioned outside overflow, NEVER clipped! */
+    .board-top-crest {
+      position: absolute;
+      top: -16px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 35;
+      pointer-events: none;
+      animation: bagFloat 3s ease-in-out infinite;
+    }
+
+    .board-top-bag {
+      width: 145px;
+      height: 120px;
+      display: block;
+      filter: drop-shadow(0 12px 22px rgba(0,0,0,0.55));
+    }
+
+    @keyframes bagFloat {
+      0%, 100% { transform: translateY(0) rotate(-2deg); }
+      50% { transform: translateY(-7px) rotate(2deg); }
+    }
+
+    /* Wooden Scroll Plaque Board */
+    .quiz-board {
+      position: relative;
+      width: 100%;
+      max-height: calc(94vh - 52px);
+      overflow-y: auto;
+      overflow-x: hidden;
+      background: #e8cca0;
+      background-image: 
+        radial-gradient(ellipse at 50% 50%, #f7e6ce 0%, #dfbe8d 68%, #cca062 100%);
+      border: 10px solid #6b3a16;
+      border-radius: 30px;
+      box-shadow: 
+        0 25px 70px rgba(0, 0, 0, 0.75),
+        inset 0 0 25px rgba(107, 58, 22, 0.45),
+        0 0 0 4px #e0b368;
+      padding: 44px 36px 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      scrollbar-width: thin;
+      scrollbar-color: #9c5c24 transparent;
+    }
+
+    /* Inner carved line */
+    .quiz-board::before {
+      content: '';
+      position: absolute;
+      inset: 8px;
+      border: 2px dashed rgba(115, 67, 29, 0.35);
+      border-radius: 20px;
+      pointer-events: none;
+    }
+
+    /* Top Left Timer / Bag Counter Badge */
+    .board-timer-badge {
+      position: absolute;
+      top: 14px;
+      left: 18px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(180deg, #784820 0%, #4d2a0e 100%);
+      border: 2px solid #d4a961;
+      border-radius: 50px;
+      padding: 5px 16px;
+      color: #ffd875;
+      font-family: 'Baloo 2', cursive;
+      font-size: 19px;
+      font-weight: 800;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    }
+
+    /* Top Right Close Button */
+    .board-close-btn {
+      position: absolute;
+      top: 14px;
+      right: 18px;
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(180deg, #8a4e22 0%, #522709 100%);
+      border: 3px solid #d4a961;
+      border-radius: 50%;
+      color: #ffd875;
+      font-family: 'Baloo 2', sans-serif;
+      font-size: 22px;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      transition: all 0.15s ease;
+    }
+
+    .board-close-btn:hover {
+      background: linear-gradient(180deg, #b71c1c 0%, #7f0000 100%);
+      border-color: #ff8a80;
+      color: #ffffff;
+      transform: scale(1.1) rotate(90deg);
+    }
+
+    /* Question Banner (Dark brown carved wooden box with gold trim) */
+    .question-banner {
+      width: 100%;
+      background: linear-gradient(180deg, #4f280e 0%, #321604 100%);
+      border: 4.5px solid #d4a75b;
+      border-radius: 20px;
+      padding: 24px 34px;
+      box-shadow: 
+        0 8px 20px rgba(0,0,0,0.4),
+        inset 0 2px 4px rgba(255,255,255,0.18),
+        0 0 15px rgba(212, 167, 91, 0.25);
+      position: relative;
+      margin-top: 16px;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+
+    /* Bracket corner details */
+    .question-banner::before, .question-banner::after {
+      content: '';
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      border-color: #ffd700;
+      border-style: solid;
+    }
+    .question-banner::before { top: 8px; left: 8px; border-width: 3.5px 0 0 3.5px; }
+    .question-banner::after { bottom: 8px; right: 8px; border-width: 0 3.5px 3.5px 0; }
+
+    .q-title {
+      font-family: 'Baloo 2', cursive;
+      font-size: clamp(17px, 1.8vw, 22px);
+      font-weight: 800;
+      color: #ffd54f;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 8px;
+      text-shadow: 0 2px 5px rgba(0,0,0,0.6);
+    }
+
+    .q-text {
+      font-family: 'Nunito', sans-serif;
+      font-size: clamp(19.5px, 2.3vw, 25.5px);
+      font-weight: 800;
+      color: #fff9ea;
+      line-height: 1.48;
+      text-shadow: 0 2px 5px rgba(0,0,0,0.6);
+    }
+
+    /* 4 Big 3D Answer Buttons in 2x2 Grid */
+    .answers-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      width: 100%;
+      margin-bottom: 18px;
+    }
+
+    .answer-btn {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      text-align: left;
+      padding: 20px 24px;
+      min-height: 76px;
+      border-radius: 18px;
+      font-family: 'Nunito', sans-serif;
+      font-size: clamp(17.5px, 2vw, 22px);
+      font-weight: 800;
+      color: #ffffff;
+      cursor: pointer;
+      line-height: 1.38;
+      border: 3.5px solid rgba(255, 255, 255, 0.45);
+      transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 6px 0 var(--btn-shadow), 0 10px 20px rgba(0,0,0,0.3);
+      user-select: none;
+    }
+
+    .answer-btn:hover:not(:disabled) {
+      transform: translateY(-3px) scale(1.015);
+      box-shadow: 0 9px 0 var(--btn-shadow), 0 16px 26px rgba(0,0,0,0.38);
+      border-color: #ffffff;
+      filter: brightness(1.08);
+    }
+
+    .answer-btn:active:not(:disabled) {
+      transform: translateY(3px) scale(0.99);
+      box-shadow: 0 3px 0 var(--btn-shadow), 0 6px 12px rgba(0,0,0,0.25);
+    }
+
+    .answer-btn:disabled {
+      cursor: default;
+    }
+
+    /* Answer A: Bright Sky Blue */
+    .ans-a {
+      --btn-shadow: #0b6c99;
+      background: linear-gradient(180deg, #2cb8ee 0%, #159ad1 50%, #0d7ea8 100%);
+    }
+
+    /* Answer B: Vibrant Grass Green */
+    .ans-b {
+      --btn-shadow: #217332;
+      background: linear-gradient(180deg, #5cc964 0%, #43ad4b 50%, #2f8b36 100%);
+    }
+
+    /* Answer C: Vivid Purple */
+    .ans-c {
+      --btn-shadow: #5c1b82;
+      background: linear-gradient(180deg, #b746db 0%, #9c27b0 50%, #76188a 100%);
+    }
+
+    /* Answer D: Warm Bright Orange */
+    .ans-d {
+      --btn-shadow: #ab4400;
+      background: linear-gradient(180deg, #ff9f1a 0%, #f57c00 50%, #d45900 100%);
+    }
+
+    /* Right / Wrong / Dimmed state highlights */
+    .answer-btn.correct-glow {
+      background: linear-gradient(180deg, #00e676 0%, #00c853 50%, #009624 100%) !important;
+      --btn-shadow: #005a16 !important;
+      border-color: #ffffff !important;
+      border-width: 4px !important;
+      color: #ffffff !important;
+      transform: scale(1.03) !important;
+      z-index: 5;
+      box-shadow: 0 8px 0 #005a16, 0 0 35px rgba(0, 230, 118, 0.95), 0 12px 24px rgba(0,0,0,0.35) !important;
+      animation: pulseGreen 0.7s ease-in-out infinite alternate !important;
+    }
+
+    @keyframes pulseGreen {
+      0% { transform: scale(1.02); filter: brightness(1); box-shadow: 0 8px 0 #005a16, 0 0 25px rgba(0, 230, 118, 0.8); }
+      100% { transform: scale(1.045); filter: brightness(1.15); box-shadow: 0 8px 0 #005a16, 0 0 45px rgba(0, 230, 118, 1); }
+    }
+
+    .answer-btn.wrong-shake {
+      background: linear-gradient(180deg, #ff3d00 0%, #e52d27 50%, #b71c1c 100%) !important;
+      --btn-shadow: #7f0000 !important;
+      border-color: #ffebee !important;
+      border-width: 4px !important;
+      color: #ffffff !important;
+      z-index: 4;
+      box-shadow: 0 8px 0 #7f0000, 0 0 30px rgba(255, 61, 0, 0.9), 0 12px 24px rgba(0,0,0,0.35) !important;
+      animation: shakeWrong 0.45s ease-in-out !important;
+    }
+
+    @keyframes shakeWrong {
+      0%, 100% { transform: translateX(0); }
+      15% { transform: translateX(-12px); }
+      30% { transform: translateX(12px); }
+      50% { transform: translateX(-8px); }
+      70% { transform: translateX(8px); }
+      85% { transform: translateX(-4px); }
+    }
+
+    /* Các câu không chọn chuyển sang màu xám mờ */
+    .answer-btn.dimmed-gray {
+      background: linear-gradient(180deg, #6c757d 0%, #525960 100%) !important;
+      --btn-shadow: #343a40 !important;
+      border-color: rgba(255, 255, 255, 0.25) !important;
+      color: #d1d5db !important;
+      opacity: 0.38 !important;
+      filter: grayscale(100%) brightness(0.85) !important;
+      transform: scale(0.97) !important;
+      box-shadow: 0 3px 0 var(--btn-shadow), 0 4px 8px rgba(0,0,0,0.2) !important;
+      transition: all 0.3s ease !important;
+    }
+
+    /* Explanation & Feedback Banner */
+    .feedback-banner {
+      width: 100%;
+      padding: 16px 24px;
+      border-radius: 16px;
+      font-family: 'Nunito', sans-serif;
+      font-size: clamp(17px, 2vw, 21px);
+      font-weight: 800;
+      line-height: 1.5;
+      text-align: center;
+      display: none;
+      margin-bottom: 16px;
+      animation: fadeIn 0.3s ease;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .feedback-banner.correct {
+      display: block;
+      background: #e8f5e9;
+      border: 3px solid #2e7d32;
+      color: #1b5e20;
+    }
+
+    .feedback-banner.wrong {
+      display: block;
+      background: #ffebee;
+      border: 3px solid #d32f2f;
+      color: #b71c1c;
+    }
+
+    /* Next / Continue Button */
+    .modal-next-btn {
+      width: 100%;
+      padding: 16px 32px;
+      background: linear-gradient(180deg, #ffca28 0%, #ffa000 50%, #ff6f00 100%);
+      border: 3.5px solid #fff9c4;
+      border-radius: 18px;
+      font-family: 'Baloo 2', cursive;
+      font-size: clamp(21px, 2.4vw, 26px);
+      font-weight: 900;
+      color: #4a2202;
+      text-shadow: 0 1px 0 rgba(255,255,255,0.6);
+      cursor: pointer;
+      display: none;
+      box-shadow: 0 6px 0 #b34a00, 0 10px 20px rgba(0,0,0,0.3);
+      transition: all 0.16s ease;
+      letter-spacing: 0.8px;
+    }
+
+    .modal-next-btn.show {
+      display: block;
+    }
+
+    .modal-next-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 0 #b34a00, 0 14px 24px rgba(0,0,0,0.35);
+      background: linear-gradient(180deg, #ffd54f 0%, #ffb300 50%, #ff8f00 100%);
+    }
+
+    .modal-next-btn:active {
+      transform: translateY(2px);
+      box-shadow: 0 2px 0 #b34a00;
+    }
+
+    /* ==========================================================
+       CONFETTI & VICTORY MODAL
+       ========================================================== */
+    .sparkle-canvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 250;
+    }
+
+    /* Help Dialog */
+    .help-dialog {
+      position: fixed;
+      inset: 0;
+      z-index: 300;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+
+    .help-dialog.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .help-card {
+      background: #fdf6e7;
+      border: 8px solid #73431d;
+      border-radius: 20px;
+      width: min(90vw, 560px);
+      padding: 26px 30px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    }
+
+    .help-card h3 {
+      font-family: 'Baloo 2', cursive;
+      font-size: 26px;
+      font-weight: 800;
+      color: #73431d;
+      margin-bottom: 14px;
+      text-align: center;
+    }
+
+    .help-card ol {
+      padding-left: 20px;
+      margin-bottom: 20px;
+      font-size: 16px;
+      line-height: 1.6;
+      color: #4a2c14;
+      font-weight: 700;
+    }
+
+    .help-card ol li {
+      margin-bottom: 8px;
+    }
+
+    .help-close-btn {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(180deg, #7c481d 0%, #522c0d 100%);
+      border: 2px solid #ffd700;
+      border-radius: 12px;
+      color: #ffffff;
+      font-family: 'Baloo 2', cursive;
+      font-size: 18px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    /* All bags opened celebration dialog */
+    .victory-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .victory-modal.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .victory-box {
+      background: linear-gradient(180deg, #fff8e1 0%, #ffe082 100%);
+      border: 8px solid #ff8f00;
+      border-radius: 28px;
+      padding: 36px 32px;
+      text-align: center;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.6);
+      width: min(92vw, 540px);
+      animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes popIn {
+      from { transform: scale(0.7); }
+      to { transform: scale(1); }
+    }
+
+    .victory-box h2 {
+      font-family: 'Baloo 2', cursive;
+      font-size: 36px;
+      font-weight: 900;
+      color: #d84315;
+      margin-bottom: 12px;
+    }
+
+    .victory-box p {
+      font-size: 18px;
+      font-weight: 800;
+      color: #5d4037;
+      margin-bottom: 24px;
+    }
+
+    .victory-actions {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+    }
+
+    /* ==========================================================
+       RESPONSIVE ADJUSTMENTS
+       ========================================================== */
+    @media (max-width: 900px) {
+      .pagoda-gate {
+        width: 220px;
+        opacity: 0.85;
+      }
+      .bags-stage {
+        gap: 14px;
+      }
+      .bottom-bar {
+        bottom: 14px;
+        right: 16px;
+      }
+      .replay-btn {
+        bottom: 14px;
+        left: 16px;
+        padding: 8px 14px;
+        font-size: 14px;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .quiz-board-wrapper {
+        width: 96vw;
+        padding-top: 42px;
+      }
+      .board-top-crest {
+        top: -12px;
+      }
+      .board-top-bag {
+        width: 115px;
+        height: 96px;
+      }
+      .quiz-board {
+        width: 100%;
+        padding: 38px 18px 20px;
+        border-radius: 22px;
+        border-width: 7px;
+      }
+      .question-banner {
+        padding: 16px 18px;
+        margin-top: 10px;
+        margin-bottom: 14px;
+      }
+      .answers-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+      .answer-btn {
+        padding: 14px 18px;
+        min-height: 58px;
+        font-size: 16.5px;
+      }
+      .feedback-banner {
+        padding: 12px 16px;
+        font-size: 16px;
+        margin-bottom: 12px;
+      }
+      .modal-next-btn {
+        padding: 14px 22px;
+        font-size: 20px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .top-bar {
+        padding: 10px 14px;
+      }
+      .pagoda-gate {
+        display: none;
+      }
+      .bag-body-art {
+        width: clamp(62px, 17vw, 110px);
+        height: clamp(92px, 24vw, 155px);
+      }
+      .bag-number {
+        font-size: 20px;
+        margin-bottom: 2px;
+      }
+      .bag-qmark {
+        font-size: 32px;
+      }
+      .ufo-switch-btn {
+        padding: 6px 14px;
+      }
+      .btn-ufo-icon {
+        width: 34px;
+        height: 32px;
+      }
+      .btn-line-1 { font-size: 13px; }
+      .btn-line-2 { font-size: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="game-viewport">
+
+  <!-- ==========================================================
+       BACKGROUND SCENERY
+       ========================================================== -->
+  <!-- Sky background -->
+  <div class="sky-bg"></div>
+
+  <!-- Radiating Sunburst & Golden Rays -->
+  <div class="sunburst"></div>
+  <div class="sun-rays"></div>
+
+  <!-- Mountain Silhouettes -->
+  <!-- Animated Sky Elements: Fluffy Clouds, Spring Swallows, Vietnamese Flute Kite -->
+  <div class="sky-clouds-wrap">
+    <!-- Cloud 1 -->
+    <div class="cloud-cluster cloud-1">
+      <svg viewBox="0 0 160 65" class="cloud-svg">
+        <path d="M25,50 A20,20 0 0,1 45,25 A30,30 0 0,1 95,20 A24,24 0 0,1 135,35 A18,18 0 0,1 155,50 A12,12 0 0,1 145,62 L20,62 A12,12 0 0,1 25,50 Z" fill="#ffffff" opacity="0.82" filter="drop-shadow(0 6px 12px rgba(80, 160, 220, 0.22))"/>
+      </svg>
+    </div>
+    <!-- Cloud 2 -->
+    <div class="cloud-cluster cloud-2">
+      <svg viewBox="0 0 200 75" class="cloud-svg">
+        <path d="M30,60 A24,24 0 0,1 58,30 A36,36 0 0,1 120,22 A28,28 0 0,1 168,40 A22,22 0 0,1 190,60 A14,14 0 0,1 180,72 L22,72 A14,14 0 0,1 30,60 Z" fill="#ffffff" opacity="0.75" filter="drop-shadow(0 8px 14px rgba(80, 160, 220, 0.2))"/>
+      </svg>
+    </div>
+    <!-- Cloud 3 -->
+    <div class="cloud-cluster cloud-3">
+      <svg viewBox="0 0 140 50" class="cloud-svg">
+        <path d="M20,40 A16,16 0 0,1 38,20 A24,24 0 0,1 80,16 A20,20 0 0,1 115,28 A14,14 0 0,1 135,40 L15,40 Z" fill="#ffffff" opacity="0.6"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Flock of Spring Swallows (Đàn chim én mùa xuân chao liệng) -->
+  <div class="swallow-flock">
+    <svg class="swallow-svg bird-1" viewBox="0 0 32 20">
+      <path d="M0,8 Q10,0 16,8 Q22,0 32,8 Q20,12 16,20 Q12,12 0,8 Z" fill="#212121"/>
+    </svg>
+    <svg class="swallow-svg bird-2" viewBox="0 0 32 20">
+      <path d="M0,8 Q10,0 16,8 Q22,0 32,8 Q20,12 16,20 Q12,12 0,8 Z" fill="#37474f"/>
+    </svg>
+    <svg class="swallow-svg bird-3" viewBox="0 0 32 20">
+      <path d="M0,8 Q10,0 16,8 Q22,0 32,8 Q20,12 16,20 Q12,12 0,8 Z" fill="#455a64"/>
+    </svg>
+  </div>
+
+  <!-- Traditional Vietnamese Flute Kite (Cánh diều sáo bay lượn trên nền trời) -->
+  <div class="flying-kite-wrap">
+    <svg class="flute-kite-svg" viewBox="0 0 120 180">
+      <defs>
+        <linearGradient id="kiteGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#ff1744"/>
+          <stop offset="50%" stop-color="#ff9100"/>
+          <stop offset="100%" stop-color="#ffd600"/>
+        </linearGradient>
+      </defs>
+      <!-- Bamboo Spine & Bow -->
+      <path d="M60,10 L60,85" stroke="#5d4037" stroke-width="2.5"/>
+      <path d="M10,48 Q60,20 110,48" stroke="#5d4037" stroke-width="2.5" fill="none"/>
+      <!-- Crescent Wing Surface (Cánh diều cong mềm mại) -->
+      <path d="M10,48 Q60,15 110,48 Q85,75 60,85 Q35,75 10,48 Z" fill="url(#kiteGrad)" stroke="#b71c1c" stroke-width="1.5" filter="drop-shadow(0 4px 8px rgba(0,0,0,0.22))"/>
+      <!-- Golden Star / Emblem -->
+      <polygon points="60,38 63,46 72,46 64,51 67,60 60,54 53,60 56,51 48,46 57,46" fill="#ffffff"/>
+      <!-- Bamboo Flute (Sáo diều) -->
+      <rect x="52" y="14" width="16" height="5" rx="2" fill="#d7ccc8" stroke="#4e342e" stroke-width="1"/>
+      <ellipse cx="52" cy="16.5" rx="1.5" ry="2.5" fill="#3e2723"/>
+      <ellipse cx="68" cy="16.5" rx="1.5" ry="2.5" fill="#3e2723"/>
+      <!-- Flowing Ribbon Streamer Tails -->
+      <path class="kite-tail-1" d="M35,80 Q45,115 30,140 T40,180" fill="none" stroke="#e91e63" stroke-width="2.2" stroke-linecap="round"/>
+      <path class="kite-tail-2" d="M60,85 Q75,120 55,150 T65,190" fill="none" stroke="#ffeb3b" stroke-width="2.6" stroke-linecap="round"/>
+      <path class="kite-tail-3" d="M85,80 Q75,115 90,140 T80,180" fill="none" stroke="#00e5ff" stroke-width="2.2" stroke-linecap="round"/>
+    </svg>
+  </div>
+
+  <!-- Majestic Vietnamese Karst Mountains (Dãy núi đá vôi Tràng An & non nước hữu tình) -->
+  <svg class="mountains-svg" viewBox="0 0 1440 340" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <!-- Karst Gradients -->
+      <linearGradient id="karstFarGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#5ca9a2" stop-opacity="0.85"/>
+        <stop offset="60%" stop-color="#80cbb5" stop-opacity="0.75"/>
+        <stop offset="100%" stop-color="#bfe8d4" stop-opacity="0.6"/>
+      </linearGradient>
+      <linearGradient id="karstMidGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#469376"/>
+        <stop offset="50%" stop-color="#5eb592"/>
+        <stop offset="100%" stop-color="#8fd6b3"/>
+      </linearGradient>
+      <linearGradient id="hillNearGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#48a85f"/>
+        <stop offset="100%" stop-color="#76cc49"/>
+      </linearGradient>
+    </defs>
+
+    <!-- Layer 1: Distant Misty Karst Peaks (Núi đá vôi xa xa) -->
+    <path d="M0,250 
+             Q120,120 220,170 
+             T440,110 
+             Q540,60 620,120 
+             T840,90 
+             Q960,40 1080,120 
+             T1320,80 
+             Q1390,120 1440,180 
+             L1440,340 L0,340 Z" fill="url(#karstFarGrad)"/>
+
+    <!-- Mountain Temple / Pagoda Tower on Far Peak (Ngọn tháp cổ trên đỉnh núi) -->
+    <g transform="translate(615, 88) scale(0.65)" opacity="0.8">
+      <rect x="0" y="24" width="22" height="18" fill="#3a5a40"/>
+      <path d="M-4,24 L11,14 L26,24 Z" fill="#8d3a1f"/>
+      <rect x="3" y="10" width="16" height="14" fill="#3a5a40"/>
+      <path d="M0,10 L11,3 L22,10 Z" fill="#8d3a1f"/>
+      <line x1="11" y1="3" x2="11" y2="-4" stroke="#ffd54f" stroke-width="2"/>
+    </g>
+
+    <!-- Layer 2: Mid-range Karst Ridges with Atmospheric Depth -->
+    <path d="M0,230 
+             Q160,140 320,200 
+             T680,150 
+             Q820,90 980,170 
+             T1300,140 
+             Q1380,170 1440,210 
+             L1440,340 L0,340 Z" fill="url(#karstMidGrad)" opacity="0.9"/>
+
+    <!-- Layer 3: Sunlit Rolling Hills in Fore-Backdrop -->
+    <path d="M0,210 
+             Q260,150 540,230 
+             T1100,180 
+             Q1280,140 1440,200 
+             L1440,340 L0,340 Z" fill="url(#hillNearGrad)"/>
+  </svg>
+
+  <!-- Rolling Valley Mist Layer -->
+  <div class="mist-layer"></div>
+
+  <!-- Left Heritage Scenery (Cụm tre trúc làng quê, cành hoa đào & đầm sen) -->
+  <svg class="heritage-scenery-left" viewBox="0 0 460 380" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="bambooGrad" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" stop-color="#388e3c"/>
+        <stop offset="35%" stop-color="#81c784"/>
+        <stop offset="70%" stop-color="#a5d6a7"/>
+        <stop offset="100%" stop-color="#2e7d32"/>
+      </linearGradient>
+      <linearGradient id="lotusPink" x1="0" y1="1" x2="0" y2="0">
+        <stop offset="0%" stop-color="#ffffff"/>
+        <stop offset="50%" stop-color="#ff80ab"/>
+        <stop offset="100%" stop-color="#f50057"/>
+      </linearGradient>
+      <linearGradient id="leafGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#4caf50"/>
+        <stop offset="100%" stop-color="#1b5e20"/>
+      </linearGradient>
+    </defs>
+
+    <!-- Bamboo Grove (Lũy tre xanh làng quê) with swaying animation -->
+    <g class="bamboo-cluster">
+      <!-- Stalk 1 -->
+      <path d="M60,380 C65,280 75,180 95,90" stroke="url(#bambooGrad)" stroke-width="11" fill="none" stroke-linecap="round"/>
+      <line x1="62" y1="310" x2="72" y2="308" stroke="#1b5e20" stroke-width="3"/>
+      <line x1="68" y1="240" x2="78" y2="238" stroke="#1b5e20" stroke-width="3"/>
+      <line x1="75" y1="170" x2="85" y2="168" stroke="#1b5e20" stroke-width="2.5"/>
+      <line x1="84" y1="115" x2="94" y2="113" stroke="#1b5e20" stroke-width="2"/>
+
+      <!-- Stalk 2 -->
+      <path d="M110,380 C115,290 120,200 135,110" stroke="url(#bambooGrad)" stroke-width="8.5" fill="none" stroke-linecap="round"/>
+      <line x1="112" y1="320" x2="120" y2="318" stroke="#1b5e20" stroke-width="2.5"/>
+      <line x1="116" y1="250" x2="124" y2="248" stroke="#1b5e20" stroke-width="2.5"/>
+      <line x1="122" y1="180" x2="130" y2="178" stroke="#1b5e20" stroke-width="2"/>
+
+      <!-- Stalk 3 -->
+      <path d="M30,380 C32,290 40,210 20,130" stroke="url(#bambooGrad)" stroke-width="7.5" fill="none" stroke-linecap="round"/>
+
+      <!-- Bamboo Leaves (Tán lá tre rợp bóng) -->
+      <g class="bamboo-leaves">
+        <path d="M95,90 Q120,80 145,95 Q120,95 95,90 Z" fill="#43a047"/>
+        <path d="M95,90 Q125,95 150,115 Q125,110 95,90 Z" fill="#66bb6a"/>
+        <path d="M95,90 Q75,70 50,75 Q75,85 95,90 Z" fill="#388e3c"/>
+        <path d="M85,120 Q120,120 140,140 Q115,135 85,120 Z" fill="#43a047"/>
+        <path d="M85,120 Q60,110 35,120 Q60,125 85,120 Z" fill="#2e7d32"/>
+        <path d="M135,110 Q165,100 190,115 Q165,115 135,110 Z" fill="#66bb6a"/>
+        <path d="M135,110 Q160,125 180,145 Q155,135 135,110 Z" fill="#43a047"/>
+        <path d="M20,130 Q-5,120 -30,135 Q-5,135 20,130 Z" fill="#388e3c"/>
+        <path d="M20,130 Q10,105 -5,95 Q10,115 20,130 Z" fill="#4caf50"/>
+      </g>
+    </g>
+
+    <!-- Flowering Peach Blossom Branch (Cành hoa đào tươi thắm mùa xuân) -->
+    <g class="peach-branch-group">
+      <!-- Wood Branch -->
+      <path d="M0,180 Q60,160 110,190 T180,170" fill="none" stroke="#5d4037" stroke-width="7" stroke-linecap="round"/>
+      <path d="M70,170 Q100,130 140,125" fill="none" stroke="#6d4c41" stroke-width="4.5" stroke-linecap="round"/>
+      <path d="M120,185 Q150,210 175,205" fill="none" stroke="#6d4c41" stroke-width="3" stroke-linecap="round"/>
+
+      <!-- Blossoms -->
+      <g transform="translate(140, 125) scale(0.95)">
+        <circle cx="-6" cy="-4" r="7" fill="url(#lotusPink)"/>
+        <circle cx="6" cy="-4" r="7" fill="url(#lotusPink)"/>
+        <circle cx="-8" cy="5" r="7" fill="url(#lotusPink)"/>
+        <circle cx="8" cy="5" r="7" fill="url(#lotusPink)"/>
+        <circle cx="0" cy="8" r="7" fill="url(#lotusPink)"/>
+        <circle cx="0" cy="2" r="3.5" fill="#ffd600"/>
+      </g>
+      <g transform="translate(110, 190) scale(1.15)">
+        <circle cx="-6" cy="-4" r="7" fill="url(#lotusPink)"/>
+        <circle cx="6" cy="-4" r="7" fill="url(#lotusPink)"/>
+        <circle cx="-8" cy="5" r="7" fill="url(#lotusPink)"/>
+        <circle cx="8" cy="5" r="7" fill="url(#lotusPink)"/>
+        <circle cx="0" cy="8" r="7" fill="url(#lotusPink)"/>
+        <circle cx="0" cy="2" r="3.5" fill="#ffd600"/>
+      </g>
+      <g transform="translate(180, 170) scale(0.85)">
+        <circle cx="-5" cy="-3" r="6" fill="url(#lotusPink)"/>
+        <circle cx="5" cy="-3" r="6" fill="url(#lotusPink)"/>
+        <circle cx="0" cy="5" r="6" fill="url(#lotusPink)"/>
+        <circle cx="0" cy="1" r="2.5" fill="#ffd600"/>
+      </g>
+      <!-- Green buds & leaves -->
+      <ellipse cx="60" cy="165" rx="5" ry="2.2" transform="rotate(-30 60 165)" fill="#7cb342"/>
+      <ellipse cx="125" cy="140" rx="6" ry="2.6" transform="rotate(25 125 140)" fill="#7cb342"/>
+      <ellipse cx="165" cy="175" rx="5" ry="2.2" transform="rotate(-40 165 175)" fill="#7cb342"/>
+    </g>
+
+    <!-- Lotus Pond on Lower Left (Đầm sen nở hoa ngát hương) -->
+    <g class="lotus-pond">
+      <ellipse cx="190" cy="358" rx="160" ry="22" fill="#5fbcd3" opacity="0.6"/>
+      <ellipse cx="190" cy="358" rx="140" ry="16" fill="#3aa8c2" opacity="0.45"/>
+      <ellipse cx="150" cy="352" rx="36" ry="13" fill="url(#leafGrad)"/>
+      <path d="M150,352 L172,346" stroke="#81c784" stroke-width="1.5"/>
+      <ellipse cx="230" cy="360" rx="44" ry="15" fill="url(#leafGrad)"/>
+      <path d="M230,360 L256,354" stroke="#81c784" stroke-width="1.5"/>
+      <ellipse cx="90" cy="362" rx="26" ry="9" fill="url(#leafGrad)"/>
+
+      <!-- Lotus Flower 1 (Blooming) -->
+      <g transform="translate(180, 334) scale(0.95)">
+        <path d="M-15,10 C-18,-5 0,-18 0,-18 C0,-18 18,-5 15,10 Z" fill="url(#lotusPink)"/>
+        <path d="M-22,12 C-22,0 -5,-12 0,-15 C5,-12 22,0 22,12 Z" fill="url(#lotusPink)" opacity="0.85"/>
+        <ellipse cx="0" cy="2" rx="4" ry="5" fill="#fbc02d"/>
+      </g>
+      <!-- Lotus Flower 2 (Bud) -->
+      <g transform="translate(245, 344) scale(0.75)">
+        <path d="M-10,8 C-12,-3 0,-14 0,-14 C0,-14 12,-3 10,8 Z" fill="url(#lotusPink)"/>
+      </g>
+    </g>
+  </svg>
+
+  <!-- Traditional Pagoda / Temple Gate on the Right -->
+  <svg class="pagoda-gate" viewBox="0 0 320 280" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="roofGrad1" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#c95828"/>
+        <stop offset="50%" stop-color="#a83c16"/>
+        <stop offset="100%" stop-color="#7a2608"/>
+      </linearGradient>
+      <linearGradient id="pillarGrad" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" stop-color="#b03824"/>
+        <stop offset="50%" stop-color="#d65138"/>
+        <stop offset="100%" stop-color="#8a2010"/>
+      </linearGradient>
+      <linearGradient id="wallGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#e2a04a"/>
+        <stop offset="100%" stop-color="#b5752c"/>
+      </linearGradient>
+    </defs>
+    <!-- Base stone pedestal -->
+    <rect x="25" y="245" width="270" height="25" rx="3" fill="#8d7256"/>
+    <rect x="40" y="235" width="240" height="12" rx="2" fill="#a48869"/>
+
+    <!-- 4 Red Lacquer Pillars -->
+    <!-- Pillar 1 -->
+    <rect x="52" y="90" width="16" height="148" rx="2" fill="url(#pillarGrad)"/>
+    <rect x="48" y="230" width="24" height="8" rx="2" fill="#5c190d"/>
+    <!-- Pillar 2 -->
+    <rect x="105" y="90" width="18" height="148" rx="2" fill="url(#pillarGrad)"/>
+    <rect x="101" y="230" width="26" height="8" rx="2" fill="#5c190d"/>
+    <!-- Pillar 3 -->
+    <rect x="197" y="90" width="18" height="148" rx="2" fill="url(#pillarGrad)"/>
+    <rect x="193" y="230" width="26" height="8" rx="2" fill="#5c190d"/>
+    <!-- Pillar 4 -->
+    <rect x="252" y="90" width="16" height="148" rx="2" fill="url(#pillarGrad)"/>
+    <rect x="248" y="230" width="24" height="8" rx="2" fill="#5c190d"/>
+
+    <!-- Central arch doorway shadow & background -->
+    <path d="M123,235 L123,130 Q160,112 197,130 L197,235 Z" fill="#663518" opacity="0.65"/>
+    <rect x="68" y="145" width="37" height="90" fill="#a86835" opacity="0.4"/>
+    <rect x="215" y="145" width="37" height="90" fill="#a86835" opacity="0.4"/>
+
+    <!-- Horizontal crossbeams -->
+    <rect x="44" y="96" width="232" height="16" rx="2" fill="#d97f2c"/>
+    <rect x="40" y="86" width="240" height="12" rx="2" fill="#8f4311"/>
+
+    <!-- Mid Tier Curved Tile Roof -->
+    <path d="M15,92 C70,82 100,75 160,75 C220,75 250,82 305,92 C312,93 318,85 308,79 C270,54 220,50 160,50 C100,50 50,54 12,79 C2,85 8,93 15,92 Z" fill="url(#roofGrad1)"/>
+    <!-- Roof upturned tip ornaments -->
+    <path d="M12,79 Q5,68 0,55 Q10,65 24,72 Z" fill="#f5af3d"/>
+    <path d="M308,79 Q315,68 320,55 Q310,65 296,72 Z" fill="#f5af3d"/>
+
+    <!-- Left Hanging Red Silk Lantern (Đèn lồng đỏ) -->
+    <g class="pagoda-lantern" transform="translate(26, 92)">
+      <line x1="0" y1="0" x2="0" y2="12" stroke="#ffeb3b" stroke-width="1.5"/>
+      <rect x="-6" y="12" width="12" height="3" rx="1" fill="#ffd54f"/>
+      <ellipse cx="0" cy="22" rx="9" ry="8" fill="#d32f2f" filter="drop-shadow(0 2px 5px rgba(211, 47, 47, 0.45))"/>
+      <ellipse cx="0" cy="22" rx="4.5" ry="8" fill="#f44336"/>
+      <line x1="0" y1="14" x2="0" y2="30" stroke="#ffca28" stroke-width="1"/>
+      <rect x="-5" y="29" width="10" height="2.5" rx="1" fill="#ffd54f"/>
+      <line x1="0" y1="31.5" x2="0" y2="44" stroke="#ffeb3b" stroke-width="2"/>
+    </g>
+
+    <!-- Right Hanging Red Silk Lantern -->
+    <g class="pagoda-lantern right-lantern" transform="translate(294, 92)">
+      <line x1="0" y1="0" x2="0" y2="12" stroke="#ffeb3b" stroke-width="1.5"/>
+      <rect x="-6" y="12" width="12" height="3" rx="1" fill="#ffd54f"/>
+      <ellipse cx="0" cy="22" rx="9" ry="8" fill="#d32f2f" filter="drop-shadow(0 2px 5px rgba(211, 47, 47, 0.45))"/>
+      <ellipse cx="0" cy="22" rx="4.5" ry="8" fill="#f44336"/>
+      <line x1="0" y1="14" x2="0" y2="30" stroke="#ffca28" stroke-width="1"/>
+      <rect x="-5" y="29" width="10" height="2.5" rx="1" fill="#ffd54f"/>
+      <line x1="0" y1="31.5" x2="0" y2="44" stroke="#ffeb3b" stroke-width="2"/>
+    </g>
+
+    <!-- Upper Pavilion / Bell Tower -->
+    <rect x="95" y="44" width="130" height="24" rx="2" fill="url(#wallGrad)"/>
+    <rect x="110" y="46" width="18" height="20" rx="1" fill="#4d240d"/>
+    <rect x="151" y="46" width="18" height="20" rx="1" fill="#4d240d"/>
+    <rect x="192" y="46" width="18" height="20" rx="1" fill="#4d240d"/>
+
+    <!-- Top Grand Curved Pagoda Roof -->
+    <path d="M65,48 C105,38 130,32 160,32 C190,32 215,38 255,48 C262,49 266,42 258,37 C228,18 195,14 160,14 C125,14 92,18 62,37 C54,42 58,49 65,48 Z" fill="url(#roofGrad1)"/>
+    <!-- Top upturned tip ornaments -->
+    <path d="M62,37 Q55,26 50,15 Q60,24 72,32 Z" fill="#f5af3d"/>
+    <path d="M258,37 Q265,26 270,15 Q260,24 248,32 Z" fill="#f5af3d"/>
+
+    <!-- Center roof pearl / spire ornament -->
+    <polygon points="160,2 165,14 155,14" fill="#ffd54f"/>
+    <circle cx="160" cy="5" r="4" fill="#ffca28"/>
+  </svg>
+
+  <!-- Rolling Green Grass Foreground -->
+  <svg class="foreground-grass" viewBox="0 0 1440 280" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Mid hill slope -->
+    <path d="M0,130 Q360,70 720,110 T1440,90 L1440,280 L0,280 Z" fill="#75cb3c"/>
+    <!-- Front undulating meadow -->
+    <path d="M0,150 Q480,180 960,130 T1440,160 L1440,280 L0,280 Z" fill="#58b327"/>
+    <!-- Wild grass clumps & leaves on bottom-left -->
+    <path d="M0,280 L20,210 Q40,230 60,190 Q75,225 110,185 Q125,230 160,200 L180,280 Z" fill="#388e1e"/>
+    <path d="M15,280 Q45,215 90,235 Q130,220 170,280 Z" fill="#2d6f16"/>
+    <!-- Wild daisies and spring blooms scattered in meadow -->
+    <g class="meadow-flowers">
+      <circle cx="380" cy="225" r="4.5" fill="#ffffff"/>
+      <circle cx="380" cy="225" r="2" fill="#ffd600"/>
+      <circle cx="430" cy="235" r="4" fill="#ffca28"/>
+      <circle cx="430" cy="235" r="1.8" fill="#e65100"/>
+      <circle cx="580" cy="215" r="5" fill="#ffffff"/>
+      <circle cx="580" cy="215" r="2.2" fill="#ffd600"/>
+      <circle cx="740" cy="235" r="4.5" fill="#ff80ab"/>
+      <circle cx="740" cy="235" r="2" fill="#ffd600"/>
+      <circle cx="890" cy="220" r="5" fill="#ffffff"/>
+      <circle cx="890" cy="220" r="2.2" fill="#ffd600"/>
+      <circle cx="1060" cy="232" r="4.5" fill="#ffca28"/>
+      <circle cx="1060" cy="232" r="2" fill="#d84315"/>
+    </g>
+    <!-- Grass clumps on bottom-right -->
+    <path d="M1280,280 L1310,215 Q1335,235 1370,195 Q1395,228 1430,205 L1440,280 Z" fill="#388e1e"/>
+  </svg>
+
+  <!-- ==========================================================
+       POETIC ANIMATED MOUNTAIN STREAM (CON SUỐI BIẾC UỐN LƯỢN NON NƯỚC HỮU TÌNH)
+       ========================================================== -->
+  <svg class="poetic-stream-svg" viewBox="0 0 1440 280" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <!-- Crystal Water Current Gradients -->
+      <linearGradient id="streamWaterGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#4dd0e1"/>
+        <stop offset="28%" stop-color="#00bcd4"/>
+        <stop offset="68%" stop-color="#0097a7"/>
+        <stop offset="100%" stop-color="#00838f"/>
+      </linearGradient>
+
+      <!-- Soft Sunlit Water Sheen -->
+      <linearGradient id="waterSheen" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" stop-color="#ffffff" stop-opacity="0"/>
+        <stop offset="35%" stop-color="#ffffff" stop-opacity="0.5"/>
+        <stop offset="65%" stop-color="#80deea" stop-opacity="0.35"/>
+        <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+      </linearGradient>
+
+      <!-- Blossom Petal Gradient -->
+      <linearGradient id="streamPetalGrad" x1="0" y1="1" x2="0" y2="0">
+        <stop offset="0%" stop-color="#ffffff"/>
+        <stop offset="60%" stop-color="#ff80ab"/>
+        <stop offset="100%" stop-color="#ff4081"/>
+      </linearGradient>
+    </defs>
+
+    <!-- Stream Bed / Earthy Banks -->
+    <path d="M760,40 C750,75 700,105 650,130 C580,165 470,185 380,215 C270,245 150,255 10,272 L5,280 L200,280 C320,265 420,245 520,210 C620,175 720,140 780,100 C820,70 810,45 780,40 Z" fill="#2e7d32" opacity="0.6"/>
+
+    <!-- Main Crystal Water Channel -->
+    <path d="M768,40 C758,72 710,102 660,128 C590,162 480,182 390,212 C280,242 160,253 20,270 L15,278 L190,278 C310,263 410,242 510,208 C610,172 710,138 772,98 C808,68 800,45 776,40 Z" fill="url(#streamWaterGrad)"/>
+
+    <!-- Water Sheen Overlay -->
+    <path d="M768,40 C758,72 710,102 660,128 C590,162 480,182 390,212 C280,242 160,253 20,270 L15,278 L190,278 C310,263 410,242 510,208 C610,172 710,138 772,98 C808,68 800,45 776,40 Z" fill="url(#waterSheen)"/>
+
+    <!-- Animated Flowing Water Ripples (Current Waves) -->
+    <path d="M772,45 C762,75 715,105 665,130 C595,164 485,184 395,214 C285,244 165,255 25,272" 
+          fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" class="stream-flow-1" opacity="0.75"/>
+    <path d="M780,55 C770,82 725,112 675,138 C605,172 495,192 405,222 C295,252 175,263 40,275" 
+          fill="none" stroke="#e0f7fa" stroke-width="2" stroke-linecap="round" class="stream-flow-2" opacity="0.85"/>
+    <path d="M764,48 C752,78 702,108 650,134 C578,168 468,188 378,218 C268,248 148,259 10,275" 
+          fill="none" stroke="#80deea" stroke-width="1.8" stroke-linecap="round" class="stream-flow-3" opacity="0.7"/>
+
+    <!-- River Stones & Mossy Pebbles along banks -->
+    <ellipse cx="788" cy="78" rx="7" ry="4" fill="#5d4037"/>
+    <ellipse cx="787" cy="76" rx="5" ry="2.5" fill="#7cb342"/>
+    <ellipse cx="748" cy="85" rx="6" ry="3.5" fill="#4e342e"/>
+    <ellipse cx="747" cy="84" rx="4" ry="2" fill="#558b2f"/>
+    <ellipse cx="682" cy="148" rx="9" ry="5" fill="#4e342e"/>
+    <ellipse cx="681" cy="146" rx="6.5" ry="3" fill="#689f38"/>
+    <ellipse cx="575" cy="158" rx="8" ry="4.5" fill="#3e2723"/>
+    <ellipse cx="574" cy="156" rx="5" ry="2.5" fill="#7cb342"/>
+    <ellipse cx="495" cy="225" rx="10" ry="5.5" fill="#4e342e"/>
+    <ellipse cx="494" cy="223" rx="7" ry="3" fill="#689f38"/>
+    <ellipse cx="370" cy="204" rx="9" ry="5" fill="#37474f"/>
+    <ellipse cx="369" cy="202" rx="6" ry="2.8" fill="#558b2f"/>
+    <ellipse cx="270" cy="258" rx="11" ry="6" fill="#4e342e"/>
+    <ellipse cx="269" cy="256" rx="7.5" ry="3.5" fill="#7cb342"/>
+    <ellipse cx="145" cy="265" rx="9" ry="5" fill="#37474f"/>
+
+    <!-- Poetic Traditional Arched Wooden Footbridge (Cầu Kiều uốn cong soi bóng dòng suối) -->
+    <g class="stream-bridge" transform="translate(635, 118)">
+      <!-- Bridge water shadow / reflection -->
+      <ellipse cx="0" cy="14" rx="28" ry="4" fill="#004d40" opacity="0.45"/>
+      <!-- Bridge deck arch -->
+      <path d="M-28,10 Q0,-6 28,10 Q0,-1 28,10 L28,14 Q0,3 -28,14 Z" fill="#6d4c41" stroke="#3e2723" stroke-width="1.2"/>
+      <path d="M-28,10 Q0,-6 28,10 L28,12 Q0,-4 -28,12 Z" fill="#bcaaa4"/>
+      <!-- Bridge Red Wooden Balustrades & Railing -->
+      <path d="M-28,3 Q0,-14 28,3" fill="none" stroke="#c62828" stroke-width="2.5" stroke-linecap="round"/>
+      <!-- Balustrade Posts -->
+      <line x1="-24" y1="8" x2="-24" y2="1" stroke="#c62828" stroke-width="2"/>
+      <line x1="-12" y1="5" x2="-12" y2="-4" stroke="#c62828" stroke-width="2"/>
+      <line x1="0" y1="3" x2="0" y2="-7" stroke="#c62828" stroke-width="2.5"/>
+      <line x1="12" y1="5" x2="12" y2="-4" stroke="#c62828" stroke-width="2"/>
+      <line x1="24" y1="8" x2="24" y2="1" stroke="#c62828" stroke-width="2"/>
+      <!-- Gold Post Caps -->
+      <circle cx="0" cy="-7.5" r="1.8" fill="#ffd54f"/>
+      <circle cx="-12" cy="-4.5" r="1.5" fill="#ffd54f"/>
+      <circle cx="12" cy="-4.5" r="1.5" fill="#ffd54f"/>
+    </g>
+
+    <!-- Sparkling Sunlight Glints on the Stream (Ánh nắng lấp lánh trên mặt nước) -->
+    <g class="stream-sparkle-group">
+      <path d="M760,56 L762,60 L766,62 L762,64 L760,68 L758,64 L754,62 L758,60 Z" fill="#ffffff" class="stream-sparkle d1"/>
+      <path d="M690,118 L692,121 L695,123 L692,125 L690,128 L688,125 L685,123 L688,121 Z" fill="#ffffff" class="stream-sparkle d2"/>
+      <path d="M530,185 L532,189 L536,191 L532,193 L530,197 L528,193 L524,191 L528,189 Z" fill="#ffffff" class="stream-sparkle d3"/>
+      <path d="M430,202 L432,205 L435,207 L432,209 L430,212 L428,209 L425,207 L428,205 Z" fill="#ffffff" class="stream-sparkle d1"/>
+      <path d="M310,238 L312,242 L316,244 L312,246 L310,250 L308,246 L304,244 L308,242 Z" fill="#ffffff" class="stream-sparkle d2"/>
+      <path d="M120,265 L122,268 L125,270 L122,272 L120,275 L118,272 L115,270 L118,268 Z" fill="#ffffff" class="stream-sparkle d3"/>
+    </g>
+
+    <!-- Floating Flower Petals Drifting Downstream (Cánh hoa trôi lững lờ trên dòng suối) -->
+    <g class="stream-petals-group">
+      <g transform="translate(710, 95)" class="stream-petal p1">
+        <path d="M0,0 C-3,-5 3,-8 5,-4 C7,0 2,4 0,0 Z" fill="url(#streamPetalGrad)"/>
+      </g>
+      <g transform="translate(585, 172)" class="stream-petal p2">
+        <path d="M0,0 C-4,-6 4,-9 6,-5 C8,0 3,5 0,0 Z" fill="url(#streamPetalGrad)"/>
+      </g>
+      <g transform="translate(450, 198)" class="stream-petal p3">
+        <path d="M0,0 C-3,-4 3,-7 5,-3 C7,1 2,4 0,0 Z" fill="url(#streamPetalGrad)"/>
+      </g>
+      <g transform="translate(230, 248)" class="stream-petal p1">
+        <path d="M0,0 C-4,-6 4,-9 7,-4 C9,1 3,6 0,0 Z" fill="url(#streamPetalGrad)"/>
+      </g>
+    </g>
+  </svg>
+
+  <!-- Spring Butterfly (Bướm xuân chao lượn) -->
+  <div class="butterfly-wrap">
+    <svg class="butterfly-svg" viewBox="0 0 30 30">
+      <path d="M15,15 Q5,5 3,12 Q0,20 15,17" fill="#ffeb3b" stroke="#f57f17" stroke-width="0.8"/>
+      <path d="M15,15 Q25,5 27,12 Q30,20 15,17" fill="#ffeb3b" stroke="#f57f17" stroke-width="0.8"/>
+      <path d="M15,17 Q6,20 8,26 Q12,28 15,19" fill="#ff7043" stroke="#d84315" stroke-width="0.7"/>
+      <path d="M15,17 Q24,20 22,26 Q18,28 15,19" fill="#ff7043" stroke="#d84315" stroke-width="0.7"/>
+      <ellipse cx="15" cy="17" rx="1.5" ry="6" fill="#3e2723"/>
+      <line x1="15" y1="11" x2="11" y2="6" stroke="#3e2723" stroke-width="0.8"/>
+      <line x1="15" y1="11" x2="19" y2="6" stroke="#3e2723" stroke-width="0.8"/>
+    </svg>
+  </div>
+
+  <!-- Vietnamese Traditional Festival Flags on Bamboo Poles (Cờ Ngũ Sắc Lễ Hội) -->
+  <svg class="festive-decorations" viewBox="0 0 1440 320" xmlns="http://www.w3.org/2000/svg">
+    <!-- Bamboo Poles for Cờ Ngũ Sắc on the right -->
+    <!-- Pole 1 -->
+    <path d="M1280,320 L1300,40" stroke="#795548" stroke-width="7" stroke-linecap="round"/>
+    <!-- Pole 2 -->
+    <path d="M1390,320 L1380,20" stroke="#8d6e63" stroke-width="8" stroke-linecap="round"/>
+
+    <!-- TRADITIONAL VIETNAMESE FESTIVAL FLAG 1 (CỜ NGŨ SẮC - Front Right) -->
+    <g transform="translate(1260, 45) rotate(10)">
+      <!-- Flame Serrated Outer Edge (Tua cờ) -->
+      <polygon points="0,0 120,0 120,120 0,120" fill="#ffcc00"/>
+      <polygon points="120,0 135,15 120,30 135,45 120,60 135,75 120,90 135,105 120,120" fill="#d32f2f"/>
+      <polygon points="0,120 15,135 30,120 45,135 60,120 75,135 90,120 105,135 120,120" fill="#d32f2f"/>
+      <!-- Band 1: Blue / Purple -->
+      <rect x="10" y="10" width="100" height="100" fill="#1565c0"/>
+      <!-- Band 2: Green -->
+      <rect x="22" y="22" width="76" height="76" fill="#2e7d32"/>
+      <!-- Band 3: Gold / Yellow -->
+      <rect x="34" y="34" width="52" height="52" fill="#fbc02d"/>
+      <!-- Center: Crimson Red -->
+      <rect x="46" y="46" width="28" height="28" fill="#c62828"/>
+    </g>
+
+    <!-- TRADITIONAL VIETNAMESE FESTIVAL FLAG 2 (Back Right) -->
+    <g transform="translate(1330, 25) rotate(-5)">
+      <polygon points="0,0 110,0 110,110 0,110" fill="#ffab00"/>
+      <polygon points="110,0 125,15 110,30 125,45 110,60 125,75 110,90 125,105 110,110" fill="#c62828"/>
+      <rect x="10" y="10" width="90" height="90" fill="#00838f"/>
+      <rect x="20" y="20" width="70" height="70" fill="#ef6c00"/>
+      <rect x="30" y="30" width="50" height="50" fill="#ffd600"/>
+      <rect x="40" y="40" width="30" height="30" fill="#b71c1c"/>
+    </g>
+
+    <!-- Small Festival Flag on Far Left -->
+    <g transform="translate(60, 85) rotate(-8) scale(0.65)">
+      <polygon points="0,0 100,0 100,100 0,100" fill="#ffd600"/>
+      <polygon points="100,0 115,15 100,30 115,45 100,60 115,75 100,90 115,100" fill="#d32f2f"/>
+      <rect x="10" y="10" width="80" height="80" fill="#1976d2"/>
+      <rect x="20" y="20" width="60" height="60" fill="#388e3c"/>
+      <rect x="30" y="30" width="40" height="40" fill="#f57f17"/>
+      <rect x="38" y="38" width="24" height="24" fill="#b71c1c"/>
+    </g>
+  </svg>
+
+  <!-- ==========================================================
+       TOP BAR (SCORE / BADGES / NAVIGATION)
+       ========================================================== -->
+  <div class="top-bar">
+    <!-- Left stats badges -->
+    <div class="stats-group">
+      <div class="stat-pill" title="Tiến độ trả bài">
+        <span class="stat-icon">🎒</span>
+        <span class="stat-val" id="participantCount">0/5</span>
+      </div>
+      <div class="stat-pill" title="Điểm số đạt được">
+        <span class="stat-icon">🏆</span>
+        <span class="stat-val" id="scoreDisplay">0 điểm</span>
+      </div>
+    </div>
+
+    <!-- Right navigation buttons -->
+    <div class="nav-actions">
+      <button type="button" class="wood-btn" id="fsToggleBtn" onclick="toggleFullscreen()" title="Chế độ toàn màn hình"><span>⛶</span> Toàn màn hình</button>
+      <button type="button" class="wood-btn" id="soundToggleBtn" onclick="toggleSound()" title="Bật / Tắt âm thanh"><span>🔊</span> Âm thanh</button>
+    </div>
+  </div>
+
+  <!-- Ambient Golden Floating Sparks Canvas -->
+  <canvas class="ambient-sparks" id="ambientSparks"></canvas>
+
+  <!-- ==========================================================
+       MAIN TITLE ("GAME TÚI MÙ") & UNIFIED FESTIVE CANOPY BANNER
+       ========================================================== -->
+  <div class="title-container">
+    <svg class="title-banner-svg" viewBox="0 0 1440 210" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <!-- Deep 3D Cast Shadow -->
+        <filter id="title3DShadow" x="-20%" y="-20%" width="140%" height="160%">
+          <feDropShadow dx="0" dy="5" stdDeviation="0" flood-color="#541600"/>
+          <feDropShadow dx="0" dy="9" stdDeviation="0" flood-color="#3b0f00"/>
+          <feDropShadow dx="0" dy="13" stdDeviation="0" flood-color="#220700"/>
+          <feDropShadow dx="0" dy="18" stdDeviation="8" flood-color="rgba(0,0,0,0.5)"/>
+        </filter>
+
+        <!-- Luscious 3D Gradient Face -->
+        <linearGradient id="titleFaceGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#fff885"/>
+          <stop offset="22%" stop-color="#ffc700"/>
+          <stop offset="55%" stop-color="#ff7b00"/>
+          <stop offset="85%" stop-color="#e63c00"/>
+          <stop offset="100%" stop-color="#ba1b00"/>
+        </linearGradient>
+
+        <!-- Upper Half Gloss Sheen -->
+        <linearGradient id="titleGloss" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9"/>
+          <stop offset="38%" stop-color="#ffffff" stop-opacity="0.2"/>
+          <stop offset="42%" stop-color="#ffffff" stop-opacity="0.0"/>
+        </linearGradient>
+
+        <!-- Ambient Golden Glow -->
+        <radialGradient id="titleAmbientGlow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#ffd54f" stop-opacity="0.65"/>
+          <stop offset="60%" stop-color="#ff9100" stop-opacity="0.2"/>
+          <stop offset="100%" stop-color="#ff6d00" stop-opacity="0"/>
+        </radialGradient>
+
+        <!-- Solid Gold Fastener Ring Gradient -->
+        <linearGradient id="ringGoldGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#fff9c4"/>
+          <stop offset="45%" stop-color="#ffd700"/>
+          <stop offset="100%" stop-color="#ff8f00"/>
+        </linearGradient>
+      </defs>
+
+      <!-- ==========================================================
+           LEFT BUNTING ROPE & PENNANTS - DIRECTLY ANCHORED INTO TITLE
+           ========================================================== -->
+      <!-- Left Festive Rope -->
+      <path d="M-20,18 Q200,82 435,88" fill="none" stroke="#684b30" stroke-width="3" stroke-linecap="round"/>
+      <path d="M-20,20 Q200,84 435,90" fill="none" stroke="#8d6e63" stroke-width="1.2" opacity="0.7"/>
+
+      <!-- Pennants on Left Rope -->
+      <polygon points="15,28 38,36 24,72" fill="#4caf50"/>
+      <polygon points="75,44 98,52 84,88" fill="#ff9800"/>
+      <polygon points="140,58 163,65 149,102" fill="#e91e63"/>
+      <polygon points="208,70 231,76 218,114" fill="#00bcd4"/>
+      <polygon points="278,79 301,84 289,122" fill="#ffd600"/>
+      <polygon points="348,84 371,87 360,125" fill="#4caf50"/>
+      <polygon points="400,87 420,88 411,122" fill="#ff3d00"/>
+
+      <!-- Flute Kite (Diều Sáo) Flying near Left Rope -->
+      <g transform="translate(145, 12)">
+        <!-- Trailing colorful ribbons -->
+        <path d="M18,34 Q8,55 5,82 Q2,100 8,118" fill="none" stroke="#e91e63" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M22,34 Q20,58 26,85 Q30,105 24,122" fill="none" stroke="#ffeb3b" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M26,34 Q34,54 36,80 Q38,102 32,120" fill="none" stroke="#00e5ff" stroke-width="2.5" stroke-linecap="round"/>
+        <!-- Kite Diamond Body -->
+        <polygon points="22,6 48,24 22,42 -4,24" fill="#ff9800" stroke="#d50000" stroke-width="2.5"/>
+        <polygon points="22,10 42,24 22,38 2,24" fill="#ffb74d"/>
+        <!-- White star in kite center -->
+        <polygon points="22,18 24,23 29,23 25,26 27,31 22,28 17,31 19,26 15,23 20,23" fill="#ffffff"/>
+        <!-- Flute Pipe (Sáo Diều) on top -->
+        <rect x="15" y="1" width="14" height="5" rx="2" fill="#efebe9" stroke="#5d4037" stroke-width="1.2"/>
+        <ellipse cx="15" cy="3.5" rx="1.5" ry="2.2" fill="#3e2723"/>
+      </g>
+
+      <!-- ==========================================================
+           RIGHT BUNTING ROPE & PENNANTS - DIRECTLY ANCHORED INTO TITLE
+           ========================================================== -->
+      <!-- Right Festive Rope -->
+      <path d="M1005,88 Q1240,82 1460,18" fill="none" stroke="#684b30" stroke-width="3" stroke-linecap="round"/>
+      <path d="M1005,90 Q1240,84 1460,20" fill="none" stroke="#8d6e63" stroke-width="1.2" opacity="0.7"/>
+
+      <!-- Pennants on Right Rope -->
+      <polygon points="1020,88 1040,87 1029,122" fill="#ff3d00"/>
+      <polygon points="1069,87 1092,84 1080,125" fill="#4caf50"/>
+      <polygon points="1139,84 1162,79 1151,122" fill="#ffd600"/>
+      <polygon points="1209,76 1232,70 1222,114" fill="#00bcd4"/>
+      <polygon points="1277,65 1300,58 1291,102" fill="#e91e63"/>
+      <polygon points="1342,52 1365,44 1356,88" fill="#ff9800"/>
+      <polygon points="1402,36 1425,28 1416,72" fill="#4caf50"/>
+
+      <!-- ==========================================================
+           ANCHOR FASTENING RINGS & FESTIVAL TASSELS
+           ========================================================== -->
+      <!-- Left Anchor Mount & Ring on the Title Banner -->
+      <g transform="translate(435, 88)">
+        <!-- Hanging Red Silk Festival Tassel -->
+        <path d="M-5,10 L-6,44 Q0,48 6,44 L5,10 Z" fill="#c62828" stroke="#8e0000" stroke-width="1"/>
+        <rect x="-4" y="8" width="8" height="4" rx="1" fill="#ffd700"/>
+        <!-- Heavy Solid Gold Fastener Ring -->
+        <circle cx="0" cy="0" r="11" fill="none" stroke="url(#ringGoldGrad)" stroke-width="4.5" filter="drop-shadow(0 4px 6px rgba(0,0,0,0.5))"/>
+        <circle cx="0" cy="0" r="6" fill="#3e1b00"/>
+      </g>
+
+      <!-- Right Anchor Mount & Ring on the Title Banner -->
+      <g transform="translate(1005, 88)">
+        <!-- Hanging Red Silk Festival Tassel -->
+        <path d="M-5,10 L-6,44 Q0,48 6,44 L5,10 Z" fill="#c62828" stroke="#8e0000" stroke-width="1"/>
+        <rect x="-4" y="8" width="8" height="4" rx="1" fill="#ffd700"/>
+        <!-- Heavy Solid Gold Fastener Ring -->
+        <circle cx="0" cy="0" r="11" fill="none" stroke="url(#ringGoldGrad)" stroke-width="4.5" filter="drop-shadow(0 4px 6px rgba(0,0,0,0.5))"/>
+        <circle cx="0" cy="0" r="6" fill="#3e1b00"/>
+      </g>
+
+      <!-- ==========================================================
+           CENTRAL ULTRA-PREMIUM 3D TITLE LOGO ("GAME TÚI MÙ")
+           ========================================================== -->
+      <!-- Golden Backlight Halo -->
+      <ellipse cx="720" cy="115" rx="360" ry="58" fill="url(#titleAmbientGlow)"/>
+
+      <!-- Layer 1: Dark Chocolate 3D Base & Extrusion with Filter -->
+      <text x="720" y="138" text-anchor="middle"
+            font-family="'Baloo 2', 'Paytone One', 'Fredoka', cursive" font-weight="900" font-size="94" letter-spacing="4"
+            fill="#260800" stroke="#260800" stroke-width="26" stroke-linejoin="round"
+            filter="url(#title3DShadow)">
+        GAME TÚI MÙ
+      </text>
+
+      <!-- Layer 2: Warm Red-Brown Inner Bevel -->
+      <text x="720" y="134" text-anchor="middle"
+            font-family="'Baloo 2', 'Paytone One', 'Fredoka', cursive" font-weight="900" font-size="94" letter-spacing="4"
+            fill="#802100" stroke="#802100" stroke-width="16" stroke-linejoin="round">
+        GAME TÚI MÙ
+      </text>
+
+      <!-- Layer 3: Vibrant Face with Golden Rim -->
+      <text x="720" y="130" text-anchor="middle"
+            font-family="'Baloo 2', 'Paytone One', 'Fredoka', cursive" font-weight="900" font-size="94" letter-spacing="4"
+            fill="url(#titleFaceGrad)" stroke="#fff59d" stroke-width="3.5" stroke-linejoin="round">
+        GAME TÚI MÙ
+      </text>
+
+      <!-- Layer 4: Upper Curved Specular Gloss -->
+      <text x="720" y="130" text-anchor="middle"
+            font-family="'Baloo 2', 'Paytone One', 'Fredoka', cursive" font-weight="900" font-size="94" letter-spacing="4"
+            fill="url(#titleGloss)">
+        GAME TÚI MÙ
+      </text>
+
+      <!-- Sparkling Diamond Glints on Letters -->
+      <g transform="translate(480, 78)">
+        <polygon points="0,-12 3.5,-3.5 12,0 3.5,3.5 0,12 -3.5,3.5 -12,0 -3.5,-3.5" fill="#ffffff"/>
+        <circle cx="0" cy="0" r="2.5" fill="#fff9c4"/>
+      </g>
+      <g transform="translate(960, 72)">
+        <polygon points="0,-15 4,-4 15,0 4,4 0,15 -4,4 -15,0 -4,-4" fill="#ffffff"/>
+        <circle cx="0" cy="0" r="3" fill="#ffd54f"/>
+      </g>
+      <g transform="translate(760, 74) scale(0.85)">
+        <polygon points="0,-10 2.5,-2.5 10,0 2.5,2.5 0,10 -2.5,2.5 -10,0 -2.5,-2.5" fill="#ffffff"/>
+      </g>
+    </svg>
+
+    <div class="title-subtag">✨ BẤM CHỌN TÚI MÙ ĐỂ TRẢ BÀI & TRẮC NGHIỆM LỊCH SỬ ✨</div>
+  </div>
+
+  <!-- ==========================================================
+       THE 5 MYSTERY BAGS (TÚI MÙ)
+       ========================================================== -->
+  <div class="bags-stage" id="bagsContainer">
+
+    <!-- ==================== BAG #1 (Purple Cosmic Galaxy) ==================== -->
+    <div class="bag-item" id="bag-1" onclick="handleBagClick(1)">
+      <div class="bag-aura"></div>
+      <div class="bag-stars" aria-hidden="true">
+        <span class="bag-star s1">✦</span>
+        <span class="bag-star s2">✧</span>
+        <span class="bag-star s3">★</span>
+        <span class="bag-star s4">✦</span>
+        <span class="bag-star s5">✧</span>
+      </div>
+      <div class="bag-number">#1</div>
+      <div class="bag-body-art">
+        <svg viewBox="0 0 160 220" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="bagGrad1" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#7b2fb3"/>
+              <stop offset="40%" stop-color="#4b1e7f"/>
+              <stop offset="80%" stop-color="#321057"/>
+              <stop offset="100%" stop-color="#1b0633"/>
+            </linearGradient>
+            <radialGradient id="nebula1" cx="45%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#ba68c8" stop-opacity="0.8"/>
+              <stop offset="60%" stop-color="#7b1fa2" stop-opacity="0.3"/>
+              <stop offset="100%" stop-color="#4a148c" stop-opacity="0"/>
+            </radialGradient>
+            <linearGradient id="shine1" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#ffffff" stop-opacity="0.25"/>
+              <stop offset="25%" stop-color="#ffffff" stop-opacity="0"/>
+              <stop offset="75%" stop-color="#ffffff" stop-opacity="0"/>
+              <stop offset="100%" stop-color="#ffffff" stop-opacity="0.25"/>
+            </linearGradient>
+          </defs>
+
+          <!-- Main foil pouch body with crimped serrated edges -->
+          <!-- Serrated top: 12 zig-zag teeth -->
+          <!-- Serrated bottom: 12 zig-zag teeth -->
+          <path d="
+            M 10 18 
+            L 16 10 L 22 18 L 28 10 L 34 18 L 40 10 L 46 18 L 52 10 L 58 18 L 64 10 L 70 18 L 76 10 
+            L 82 18 L 88 10 L 94 18 L 100 10 L 106 18 L 112 10 L 118 18 L 124 10 L 130 18 L 136 10 
+            L 142 18 L 148 10 L 154 18
+            L 150 202
+            L 144 210 L 138 202 L 132 210 L 126 202 L 120 210 L 114 202 L 108 210 L 102 202 L 96 210 
+            L 90 202 L 84 210 L 78 202 L 72 210 L 66 202 L 60 210 L 54 202 L 48 210 L 42 202 L 36 210 
+            L 30 202 L 24 210 L 18 202 L 12 210 L 6 202
+            Z" 
+            fill="url(#bagGrad1)" stroke="#310d52" stroke-width="2.5" stroke-linejoin="round"/>
+
+          <!-- Nebula Cosmic Cloud glow inside -->
+          <ellipse cx="75" cy="115" rx="55" ry="50" fill="url(#nebula1)"/>
+
+          <!-- Top and Bottom heat-seal band lines -->
+          <rect x="8" y="18" width="144" height="12" fill="rgba(0,0,0,0.18)"/>
+          <line x1="8" y1="30" x2="152" y2="30" stroke="#8e3fc7" stroke-width="2"/>
+          <rect x="8" y="190" width="144" height="12" fill="rgba(0,0,0,0.25)"/>
+          <line x1="8" y1="190" x2="152" y2="190" stroke="#8e3fc7" stroke-width="2"/>
+
+          <!-- Saturn-like ringed planet at lower right -->
+          <circle cx="120" cy="155" r="10" fill="#ffd54f"/>
+          <ellipse cx="120" cy="155" rx="19" ry="5" fill="none" stroke="#ffe082" stroke-width="2" transform="rotate(-25 120 155)"/>
+
+          <!-- Galaxy starbursts & sparkles -->
+          <text x="32" y="65" fill="#fff" font-size="14" opacity="0.85">✦</text>
+          <text x="126" y="75" fill="#fff" font-size="12" opacity="0.8">✧</text>
+          <text x="38" y="170" fill="#ffe082" font-size="11" opacity="0.9">★</text>
+          <text x="65" y="178" fill="#fff" font-size="9" opacity="0.75">✦</text>
+          <circle cx="48" cy="100" r="1.5" fill="#fff"/>
+          <circle cx="112" cy="110" r="2" fill="#fff"/>
+          <circle cx="95" cy="62" r="1.2" fill="#ffe082"/>
+
+          <!-- Metallic foil highlight sheen -->
+          <rect x="10" y="20" width="140" height="180" fill="url(#shine1)"/>
+
+          <!-- Circular shooting-star emblem badge at top -->
+          <g transform="translate(80, 48)">
+            <circle cx="0" cy="0" r="18" fill="#5c1d8c" stroke="#b388ff" stroke-width="2.5"/>
+            <!-- Shooting star with tail -->
+            <path d="M-6,2 Q-14,8 -16,14 M-6,0 Q-16,3 -20,6 M-6,-2 Q-14,-4 -18,-5" stroke="#ffe082" stroke-width="2" stroke-linecap="round"/>
+            <polygon points="0,-10 3,-3 10,-3 4,2 6,9 0,5 -6,9 -4,2 -10,-3 -3,-3" fill="#ffffff" stroke="#ffd700" stroke-width="1"/>
+          </g>
+        </svg>
+        <span class="bag-qmark">?</span>
+      </div>
+      <div class="bag-hint-badge"><span>🎁</span> Mở túi</div>
+      <div class="bag-ground-shadow"></div>
+    </div>
+
+    <!-- ==================== BAG #2 (Vivid Magenta Pink Starlight) ==================== -->
+    <div class="bag-item" id="bag-2" onclick="handleBagClick(2)">
+      <div class="bag-aura"></div>
+      <div class="bag-stars" aria-hidden="true">
+        <span class="bag-star s1">✦</span>
+        <span class="bag-star s2">✧</span>
+        <span class="bag-star s3">★</span>
+        <span class="bag-star s4">✦</span>
+        <span class="bag-star s5">✧</span>
+      </div>
+      <div class="bag-number">#2</div>
+      <div class="bag-body-art">
+        <svg viewBox="0 0 160 220" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="bagGrad2" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#f02471"/>
+              <stop offset="45%" stop-color="#c2185b"/>
+              <stop offset="85%" stop-color="#880e4f"/>
+              <stop offset="100%" stop-color="#4a0429"/>
+            </linearGradient>
+            <radialGradient id="nebula2" cx="50%" cy="52%" r="48%">
+              <stop offset="0%" stop-color="#ff6090" stop-opacity="0.8"/>
+              <stop offset="60%" stop-color="#e91e63" stop-opacity="0.3"/>
+              <stop offset="100%" stop-color="#880e4f" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+
+          <!-- Pouch body -->
+          <path d="
+            M 10 18 
+            L 16 10 L 22 18 L 28 10 L 34 18 L 40 10 L 46 18 L 52 10 L 58 18 L 64 10 L 70 18 L 76 10 
+            L 82 18 L 88 10 L 94 18 L 100 10 L 106 18 L 112 10 L 118 18 L 124 10 L 130 18 L 136 10 
+            L 142 18 L 148 10 L 154 18
+            L 150 202
+            L 144 210 L 138 202 L 132 210 L 126 202 L 120 210 L 114 202 L 108 210 L 102 202 L 96 210 
+            L 90 202 L 84 210 L 78 202 L 72 210 L 66 202 L 60 210 L 54 202 L 48 210 L 42 202 L 36 210 
+            L 30 202 L 24 210 L 18 202 L 12 210 L 6 202
+            Z" 
+            fill="url(#bagGrad2)" stroke="#5c0631" stroke-width="2.5" stroke-linejoin="round"/>
+
+          <ellipse cx="80" cy="115" rx="52" ry="50" fill="url(#nebula2)"/>
+
+          <!-- Top / bottom seals -->
+          <rect x="8" y="18" width="144" height="12" fill="rgba(0,0,0,0.15)"/>
+          <line x1="8" y1="30" x2="152" y2="30" stroke="#f48fb1" stroke-width="2"/>
+          <rect x="8" y="190" width="144" height="12" fill="rgba(0,0,0,0.2)"/>
+          <line x1="8" y1="190" x2="152" y2="190" stroke="#f48fb1" stroke-width="2"/>
+
+          <!-- Twinkling diamond star sparkles -->
+          <text x="34" y="68" fill="#fff" font-size="15" opacity="0.9">✦</text>
+          <text x="122" y="70" fill="#fff" font-size="13" opacity="0.85">✦</text>
+          <text x="36" y="165" fill="#fff" font-size="11" opacity="0.8">✧</text>
+          <text x="124" y="160" fill="#fff" font-size="14" opacity="0.9">✦</text>
+          <circle cx="50" cy="85" r="2" fill="#fff"/>
+          <circle cx="110" cy="95" r="2.2" fill="#fff"/>
+          <circle cx="68" cy="172" r="1.5" fill="#fff"/>
+          <circle cx="102" cy="170" r="1.5" fill="#fff"/>
+
+          <rect x="10" y="20" width="140" height="180" fill="url(#shine1)"/>
+
+          <!-- Top Shooting Star badge -->
+          <g transform="translate(80, 48)">
+            <circle cx="0" cy="0" r="18" fill="#880e4f" stroke="#ff80ab" stroke-width="2.5"/>
+            <path d="M-6,2 Q-14,8 -16,14 M-6,0 Q-16,3 -20,6 M-6,-2 Q-14,-4 -18,-5" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
+            <polygon points="0,-10 3,-3 10,-3 4,2 6,9 0,5 -6,9 -4,2 -10,-3 -3,-3" fill="#ffffff" stroke="#ff4081" stroke-width="1"/>
+          </g>
+        </svg>
+        <span class="bag-qmark">?</span>
+      </div>
+      <div class="bag-hint-badge"><span>🎁</span> Mở túi</div>
+      <div class="bag-ground-shadow"></div>
+    </div>
+
+    <!-- ==================== BAG #3 (Aqua / Teal Constellation) ==================== -->
+    <div class="bag-item" id="bag-3" onclick="handleBagClick(3)">
+      <div class="bag-aura"></div>
+      <div class="bag-stars" aria-hidden="true">
+        <span class="bag-star s1">✦</span>
+        <span class="bag-star s2">✧</span>
+        <span class="bag-star s3">★</span>
+        <span class="bag-star s4">✦</span>
+        <span class="bag-star s5">✧</span>
+      </div>
+      <div class="bag-number">#3</div>
+      <div class="bag-body-art">
+        <svg viewBox="0 0 160 220" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="bagGrad3" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#14c7c7"/>
+              <stop offset="45%" stop-color="#008a90"/>
+              <stop offset="85%" stop-color="#004d40"/>
+              <stop offset="100%" stop-color="#00251a"/>
+            </linearGradient>
+            <radialGradient id="nebula3" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#80deea" stop-opacity="0.75"/>
+              <stop offset="60%" stop-color="#0097a7" stop-opacity="0.3"/>
+              <stop offset="100%" stop-color="#004d40" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+
+          <!-- Pouch body -->
+          <path d="
+            M 10 18 
+            L 16 10 L 22 18 L 28 10 L 34 18 L 40 10 L 46 18 L 52 10 L 58 18 L 64 10 L 70 18 L 76 10 
+            L 82 18 L 88 10 L 94 18 L 100 10 L 106 18 L 112 10 L 118 18 L 124 10 L 130 18 L 136 10 
+            L 142 18 L 148 10 L 154 18
+            L 150 202
+            L 144 210 L 138 202 L 132 210 L 126 202 L 120 210 L 114 202 L 108 210 L 102 202 L 96 210 
+            L 90 202 L 84 210 L 78 202 L 72 210 L 66 202 L 60 210 L 54 202 L 48 210 L 42 202 L 36 210 
+            L 30 202 L 24 210 L 18 202 L 12 210 L 6 202
+            Z" 
+            fill="url(#bagGrad3)" stroke="#00332c" stroke-width="2.5" stroke-linejoin="round"/>
+
+          <ellipse cx="80" cy="115" rx="55" ry="50" fill="url(#nebula3)"/>
+
+          <!-- Constellation lines & stars -->
+          <g stroke="rgba(255,255,255,0.4)" stroke-width="1.2" fill="none">
+            <polyline points="28,80 42,95 38,125 55,145"/>
+            <polyline points="135,75 120,95 125,125 110,140"/>
+            <circle cx="28" cy="80" r="2.5" fill="#fff"/>
+            <circle cx="42" cy="95" r="2.5" fill="#fff"/>
+            <circle cx="38" cy="125" r="2.5" fill="#fff"/>
+            <circle cx="55" cy="145" r="2.5" fill="#fff"/>
+            <circle cx="135" cy="75" r="2.5" fill="#fff"/>
+            <circle cx="120" cy="95" r="2.5" fill="#fff"/>
+            <circle cx="125" cy="125" r="2.5" fill="#fff"/>
+            <circle cx="110" cy="140" r="2.5" fill="#fff"/>
+            <!-- Celestial astrology arc -->
+            <path d="M25,170 A 50 50 0 0 1 70,185" stroke-dasharray="3,3"/>
+          </g>
+
+          <rect x="8" y="18" width="144" height="12" fill="rgba(0,0,0,0.15)"/>
+          <line x1="8" y1="30" x2="152" y2="30" stroke="#80cbc4" stroke-width="2"/>
+          <rect x="8" y="190" width="144" height="12" fill="rgba(0,0,0,0.2)"/>
+          <line x1="8" y1="190" x2="152" y2="190" stroke="#80cbc4" stroke-width="2"/>
+
+          <rect x="10" y="20" width="140" height="180" fill="url(#shine1)"/>
+
+          <!-- Top Shooting Star badge -->
+          <g transform="translate(80, 48)">
+            <circle cx="0" cy="0" r="18" fill="#004d40" stroke="#80deea" stroke-width="2.5"/>
+            <path d="M-6,2 Q-14,8 -16,14 M-6,0 Q-16,3 -20,6 M-6,-2 Q-14,-4 -18,-5" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
+            <polygon points="0,-10 3,-3 10,-3 4,2 6,9 0,5 -6,9 -4,2 -10,-3 -3,-3" fill="#ffffff" stroke="#00e5ff" stroke-width="1"/>
+          </g>
+        </svg>
+        <span class="bag-qmark">?</span>
+      </div>
+      <div class="bag-hint-badge"><span>🎁</span> Mở túi</div>
+      <div class="bag-ground-shadow"></div>
+    </div>
+
+    <!-- ==================== BAG #4 (Midnight Navy & Golden Cosmos) ==================== -->
+    <div class="bag-item" id="bag-4" onclick="handleBagClick(4)">
+      <div class="bag-aura"></div>
+      <div class="bag-stars" aria-hidden="true">
+        <span class="bag-star s1">✦</span>
+        <span class="bag-star s2">✧</span>
+        <span class="bag-star s3">★</span>
+        <span class="bag-star s4">✦</span>
+        <span class="bag-star s5">✧</span>
+      </div>
+      <div class="bag-number">#4</div>
+      <div class="bag-body-art">
+        <svg viewBox="0 0 160 220" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="bagGrad4" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#283593"/>
+              <stop offset="45%" stop-color="#1a237e"/>
+              <stop offset="85%" stop-color="#0d134d"/>
+              <stop offset="100%" stop-color="#050721"/>
+            </linearGradient>
+            <radialGradient id="nebula4" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#5c6bc0" stop-opacity="0.65"/>
+              <stop offset="60%" stop-color="#283593" stop-opacity="0.3"/>
+              <stop offset="100%" stop-color="#0d134d" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+
+          <!-- Pouch body -->
+          <path d="
+            M 10 18 
+            L 16 10 L 22 18 L 28 10 L 34 18 L 40 10 L 46 18 L 52 10 L 58 18 L 64 10 L 70 18 L 76 10 
+            L 82 18 L 88 10 L 94 18 L 100 10 L 106 18 L 112 10 L 118 18 L 124 10 L 130 18 L 136 10 
+            L 142 18 L 148 10 L 154 18
+            L 150 202
+            L 144 210 L 138 202 L 132 210 L 126 202 L 120 210 L 114 202 L 108 210 L 102 202 L 96 210 
+            L 90 202 L 84 210 L 78 202 L 72 210 L 66 202 L 60 210 L 54 202 L 48 210 L 42 202 L 36 210 
+            L 30 202 L 24 210 L 18 202 L 12 210 L 6 202
+            Z" 
+            fill="url(#bagGrad4)" stroke="#06092b" stroke-width="2.5" stroke-linejoin="round"/>
+
+          <ellipse cx="80" cy="115" rx="55" ry="50" fill="url(#nebula4)"/>
+
+          <!-- Golden stars & cosmic swirls -->
+          <text x="32" y="70" fill="#ffd54f" font-size="14" opacity="0.9">★</text>
+          <text x="124" y="72" fill="#ffd54f" font-size="12" opacity="0.85">✦</text>
+          <text x="35" y="165" fill="#ffd54f" font-size="11" opacity="0.8">★</text>
+          <text x="122" y="155" fill="#ffd54f" font-size="15" opacity="0.9">★</text>
+          <circle cx="50" cy="95" r="2" fill="#ffd54f"/>
+          <circle cx="112" cy="105" r="2" fill="#fff"/>
+          <!-- Orbit ring -->
+          <ellipse cx="110" cy="160" rx="24" ry="7" fill="none" stroke="#ffd54f" stroke-width="1.5" stroke-opacity="0.7" transform="rotate(-20 110 160)"/>
+
+          <rect x="8" y="18" width="144" height="12" fill="rgba(0,0,0,0.2)"/>
+          <line x1="8" y1="30" x2="152" y2="30" stroke="#7986cb" stroke-width="2"/>
+          <rect x="8" y="190" width="144" height="12" fill="rgba(0,0,0,0.25)"/>
+          <line x1="8" y1="190" x2="152" y2="190" stroke="#7986cb" stroke-width="2"/>
+
+          <rect x="10" y="20" width="140" height="180" fill="url(#shine1)"/>
+
+          <!-- Top Shooting Star badge -->
+          <g transform="translate(80, 48)">
+            <circle cx="0" cy="0" r="18" fill="#0d134d" stroke="#ffd54f" stroke-width="2.5"/>
+            <path d="M-6,2 Q-14,8 -16,14 M-6,0 Q-16,3 -20,6 M-6,-2 Q-14,-4 -18,-5" stroke="#ffe082" stroke-width="2" stroke-linecap="round"/>
+            <polygon points="0,-10 3,-3 10,-3 4,2 6,9 0,5 -6,9 -4,2 -10,-3 -3,-3" fill="#ffe082" stroke="#ffb300" stroke-width="1"/>
+          </g>
+        </svg>
+        <span class="bag-qmark">?</span>
+      </div>
+      <div class="bag-hint-badge"><span>🎁</span> Mở túi</div>
+      <div class="bag-ground-shadow"></div>
+    </div>
+
+    <!-- ==================== BAG #5 (Rose Gold / Sparkle Hologram) ==================== -->
+    <div class="bag-item" id="bag-5" onclick="handleBagClick(5)">
+      <div class="bag-aura"></div>
+      <div class="bag-stars" aria-hidden="true">
+        <span class="bag-star s1">✦</span>
+        <span class="bag-star s2">✧</span>
+        <span class="bag-star s3">★</span>
+        <span class="bag-star s4">✦</span>
+        <span class="bag-star s5">✧</span>
+      </div>
+      <div class="bag-number">#5</div>
+      <div class="bag-body-art">
+        <svg viewBox="0 0 160 220" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="bagGrad5" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#dfb4c2"/>
+              <stop offset="45%" stop-color="#be8799"/>
+              <stop offset="85%" stop-color="#8d5668"/>
+              <stop offset="100%" stop-color="#552a38"/>
+            </linearGradient>
+            <radialGradient id="nebula5" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#f8bbd0" stop-opacity="0.85"/>
+              <stop offset="60%" stop-color="#d81b60" stop-opacity="0.25"/>
+              <stop offset="100%" stop-color="#880e4f" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+
+          <!-- Pouch body -->
+          <path d="
+            M 10 18 
+            L 16 10 L 22 18 L 28 10 L 34 18 L 40 10 L 46 18 L 52 10 L 58 18 L 64 10 L 70 18 L 76 10 
+            L 82 18 L 88 10 L 94 18 L 100 10 L 106 18 L 112 10 L 118 18 L 124 10 L 130 18 L 136 10 
+            L 142 18 L 148 10 L 154 18
+            L 150 202
+            L 144 210 L 138 202 L 132 210 L 126 202 L 120 210 L 114 202 L 108 210 L 102 202 L 96 210 
+            L 90 202 L 84 210 L 78 202 L 72 210 L 66 202 L 60 210 L 54 202 L 48 210 L 42 202 L 36 210 
+            L 30 202 L 24 210 L 18 202 L 12 210 L 6 202
+            Z" 
+            fill="url(#bagGrad5)" stroke="#502432" stroke-width="2.5" stroke-linejoin="round"/>
+
+          <ellipse cx="80" cy="115" rx="55" ry="50" fill="url(#nebula5)"/>
+
+          <!-- Dense Twinkling Stardust Glitter -->
+          <text x="35" y="70" fill="#fff" font-size="12" opacity="0.95">✦</text>
+          <text x="120" y="75" fill="#fff" font-size="14" opacity="0.9">✦</text>
+          <text x="34" y="160" fill="#fff" font-size="13" opacity="0.9">✧</text>
+          <text x="122" y="168" fill="#fff" font-size="11" opacity="0.85">✦</text>
+          <circle cx="48" cy="85" r="1.8" fill="#fff"/>
+          <circle cx="62" cy="100" r="1.2" fill="#fff"/>
+          <circle cx="100" cy="90" r="1.5" fill="#fff"/>
+          <circle cx="115" cy="108" r="1.8" fill="#fff"/>
+          <circle cx="50" cy="145" r="1.4" fill="#fff"/>
+          <circle cx="105" cy="150" r="1.6" fill="#fff"/>
+
+          <rect x="8" y="18" width="144" height="12" fill="rgba(0,0,0,0.12)"/>
+          <line x1="8" y1="30" x2="152" y2="30" stroke="#f48fb1" stroke-width="2"/>
+          <rect x="8" y="190" width="144" height="12" fill="rgba(0,0,0,0.18)"/>
+          <line x1="8" y1="190" x2="152" y2="190" stroke="#f48fb1" stroke-width="2"/>
+
+          <rect x="10" y="20" width="140" height="180" fill="url(#shine1)"/>
+
+          <!-- Top Shooting Star badge -->
+          <g transform="translate(80, 48)">
+            <circle cx="0" cy="0" r="18" fill="#6d394a" stroke="#f8bbd0" stroke-width="2.5"/>
+            <path d="M-6,2 Q-14,8 -16,14 M-6,0 Q-16,3 -20,6 M-6,-2 Q-14,-4 -18,-5" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
+            <polygon points="0,-10 3,-3 10,-3 4,2 6,9 0,5 -6,9 -4,2 -10,-3 -3,-3" fill="#ffffff" stroke="#f06292" stroke-width="1"/>
+          </g>
+        </svg>
+        <span class="bag-qmark">?</span>
+      </div>
+      <div class="bag-hint-badge"><span>🎁</span> Mở túi</div>
+      <div class="bag-ground-shadow"></div>
+    </div>
+
+  </div>
+
+  <!-- Replay Button on bottom-left -->
+  <button class="replay-btn" onclick="handleReplay()" title="Chơi lại toàn bộ túi mù">
+    <span>🔄</span> Chơi lại
+  </button>
+
+  <!-- ==========================================================
+       BOTTOM RIGHT BUTTON ("Chuyển qua Game UFO")
+       ========================================================== -->
+  <div class="bottom-bar">
+    <button type="button" class="ufo-switch-btn" id="btnUFO" onclick="launchUFOTransition()" title="Chuyển sang trò chơi UFO bắt học sinh">
+      <span class="ufo-badge-hot">🚀 GỌI BẮT HỌC SINH</span>
+      <!-- Cartoon UFO Icon SVG -->
+      <svg class="btn-ufo-icon" viewBox="0 0 100 80" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="ufoDome" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#80d8ff"/>
+            <stop offset="100%" stop-color="#0091ea"/>
+          </linearGradient>
+          <linearGradient id="ufoHull" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#ce93d8"/>
+            <stop offset="50%" stop-color="#ab47bc"/>
+            <stop offset="100%" stop-color="#6a1b9a"/>
+          </linearGradient>
+          <linearGradient id="ufoBeam" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#ffff00" stop-opacity="0.8"/>
+            <stop offset="100%" stop-color="#ffff00" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <!-- Tractor light beam -->
+        <polygon points="35,52 65,52 82,78 18,78" fill="url(#ufoBeam)"/>
+        <!-- Glass Cockpit Dome -->
+        <ellipse cx="50" cy="32" rx="20" ry="16" fill="url(#ufoDome)"/>
+        <ellipse cx="45" cy="27" rx="8" ry="4" fill="#ffffff" opacity="0.6"/>
+        <!-- Saucer Hull -->
+        <ellipse cx="50" cy="46" rx="44" ry="14" fill="url(#ufoHull)" stroke="#4a148c" stroke-width="2"/>
+        <ellipse cx="50" cy="43" rx="42" ry="11" fill="#ba68c8"/>
+        <!-- Ring lights -->
+        <circle cx="20" cy="46" r="3" fill="#ffff00"/>
+        <circle cx="35" cy="49" r="3.5" fill="#00e676"/>
+        <circle cx="50" cy="50" r="4" fill="#ff1744"/>
+        <circle cx="65" cy="49" r="3.5" fill="#00e676"/>
+        <circle cx="80" cy="46" r="3" fill="#ffff00"/>
+      </svg>
+
+      <div class="btn-text-box">
+        <span class="btn-line-1">Chuyển qua</span>
+        <span class="btn-line-2">Game UFO</span>
+      </div>
+    </button>
+  </div>
+
+</div>
+
+<!-- ==========================================================
+     QUIZ MODAL POPUP (EXACT MATCH TO REFERENCE IMAGE 2)
+     ========================================================== -->
+<div class="modal-overlay" id="quizModal">
+  <div class="quiz-board-wrapper">
+
+    <!-- Overflowing Open Mystery Bag at Top Center - Positioned OUTSIDE overflow container, NEVER clipped! -->
+    <div class="board-top-crest">
+      <svg class="board-top-bag" viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="openBagGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#ff4081"/>
+            <stop offset="60%" stop-color="#ab47bc"/>
+            <stop offset="100%" stop-color="#4a148c"/>
+          </linearGradient>
+          <filter id="starGoldGlow" x="-30%" y="-30%" width="160%" height="160%">
+            <feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="#ff6f00" flood-opacity="0.8"/>
+          </filter>
+        </defs>
+        <!-- Confetti & Candies Bursting Out -->
+        <circle cx="35" cy="18" r="4.5" fill="#ffeb3b"/>
+        <circle cx="50" cy="10" r="5.5" fill="#00e676"/>
+        <circle cx="70" cy="12" r="4.5" fill="#ff1744"/>
+        <circle cx="85" cy="22" r="5.5" fill="#00b0ff"/>
+        <polygon points="40,24 45,28 38,32" fill="#ffd600"/>
+        <polygon points="76,20 82,26 74,30" fill="#e040fb"/>
+        <!-- Open Bag Pouch -->
+        <path d="M 25 36 Q 60 22 95 36 L 90 90 Q 60 98 30 90 Z" fill="url(#openBagGrad)" stroke="#4a148c" stroke-width="3"/>
+        <!-- Folded open lip -->
+        <path d="M 22 36 Q 60 48 98 36 L 93 46 Q 60 56 27 46 Z" fill="#ea80fc"/>
+        <!-- Big Gold Star on Bag front - Adjusted UP & fitted nicely ("kéo lên trên hãy chỉnh lại cho khớp") -->
+        <polygon points="60,46 64,58 77,58 67,65 71,77 60,70 49,77 53,65 43,58 56,58" fill="#ffd700" stroke="#ff6f00" stroke-width="1.8" filter="url(#starGoldGlow)"/>
+        <polygon points="60,50 63,58 72,58 65,63.5 68,72 60,67.5 52,72 55,63.5 48,58 57,58" fill="#fff9c4"/>
+      </svg>
+    </div>
+
+    <!-- Wooden Scroll Plaque Board -->
+    <div class="quiz-board">
+
+      <!-- Top Left Timer Badge -->
+      <div class="board-timer-badge">
+        <span>⏱</span>
+        <span id="quizTimer">0</span>
+      </div>
+
+      <!-- Top Right Close Button -->
+      <button class="board-close-btn" onclick="closeQuizModal()" title="Đóng câu hỏi">✕</button>
+
+      <!-- Question Title & Content Banner -->
+      <div class="question-banner">
+        <div class="q-title" id="qTitle">Câu hỏi 1</div>
+        <div class="q-text" id="qContent">Nội dung câu hỏi trắc nghiệm sẽ hiển thị tại đây?</div>
+      </div>
+
+      <!-- 4 Big 3D Answer Buttons (A, B, C, D) -->
+      <div class="answers-grid">
+        <button class="answer-btn ans-a" id="ansBtn0" onclick="handleSelectAnswer(0)">A. Đáp án 1</button>
+        <button class="answer-btn ans-b" id="ansBtn1" onclick="handleSelectAnswer(1)">B. Đáp án 2</button>
+        <button class="answer-btn ans-c" id="ansBtn2" onclick="handleSelectAnswer(2)">C. Đáp án 3</button>
+        <button class="answer-btn ans-d" id="ansBtn3" onclick="handleSelectAnswer(3)">D. Đáp án 4</button>
+      </div>
+
+      <!-- Feedback Banner -->
+      <div class="feedback-banner" id="feedbackBanner"></div>
+
+      <!-- Next / Continue Button -->
+      <button class="modal-next-btn" id="modalNextBtn" onclick="handleProceedAfterAnswer()">
+        Tiếp tục ➔
+      </button>
+
+    </div>
+  </div>
+</div>
+
+<!-- ==========================================================
+     VICTORY MODAL (ALL 5 BAGS FINISHED)
+     ========================================================== -->
+<div class="victory-modal" id="victoryModal">
+  <div class="victory-box">
+    <h2>🎉 XUẤT SẮC! 🎉</h2>
+    <p>Bạn đã hoàn thành tất cả 5 túi mù bí ẩn!<br>Tổng điểm của bạn: <span id="finalScore" style="color:#e65100;font-size:26px;font-weight:900">100</span> / 100 điểm</p>
+    <div class="victory-actions">
+      <button class="replay-btn" style="position:static" onclick="handleReplay()">🔄 Chơi lại</button>
+      <button type="button" class="ufo-switch-btn" style="position:static" onclick="launchUFOTransition()">
+        <span class="btn-line-2">🛸 Chuyển qua Game UFO</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Sparkle Confetti Canvas -->
+<canvas class="sparkle-canvas" id="confettiCanvas"></canvas>
+
+<!-- ==========================================================
+     HYPERSPACE UFO TRANSITION OVERLAY
+     ========================================================== -->
+<div class="ufo-hyper-warp" id="ufoHyperWarp">
+  <canvas class="warp-tunnel-canvas" id="warpTunnelCanvas"></canvas>
+  <div class="warp-energy-ring"></div>
+  <div class="warp-energy-ring"></div>
+  <div class="warp-energy-ring"></div>
+  <div class="warp-laser-beam"></div>
+
+  <!-- Big Animated Cinematic UFO -->
+  <svg class="warp-ufo-craft" viewBox="0 0 240 180" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="warpDomeGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#e1f5fe"/>
+        <stop offset="30%" stop-color="#80d8ff"/>
+        <stop offset="100%" stop-color="#0091ea"/>
+      </linearGradient>
+      <linearGradient id="warpHullGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#f3e5f5"/>
+        <stop offset="25%" stop-color="#ce93d8"/>
+        <stop offset="60%" stop-color="#ab47bc"/>
+        <stop offset="100%" stop-color="#4a148c"/>
+      </linearGradient>
+      <linearGradient id="warpFlame" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#00e5ff"/>
+        <stop offset="50%" stop-color="#76ff03"/>
+        <stop offset="100%" stop-color="transparent"/>
+      </linearGradient>
+    </defs>
+    <!-- Exhaust plasma jets -->
+    <ellipse cx="70" cy="125" rx="12" ry="32" fill="url(#warpFlame)" opacity="0.8"/>
+    <ellipse cx="120" cy="130" rx="16" ry="40" fill="url(#warpFlame)" opacity="0.9"/>
+    <ellipse cx="170" cy="125" rx="12" ry="32" fill="url(#warpFlame)" opacity="0.8"/>
+    <!-- Glass Dome -->
+    <ellipse cx="120" cy="70" rx="46" ry="40" fill="url(#warpDomeGrad)" stroke="#b3e5fc" stroke-width="2"/>
+    <ellipse cx="108" cy="58" rx="18" ry="9" fill="#ffffff" opacity="0.7"/>
+    <!-- Alien pilot silhouette -->
+    <ellipse cx="120" cy="74" rx="12" ry="14" fill="#00e676"/>
+    <circle cx="115" cy="72" r="2.5" fill="#1b5e20"/>
+    <circle cx="125" cy="72" r="2.5" fill="#1b5e20"/>
+    <!-- Saucer Hull -->
+    <ellipse cx="120" cy="98" rx="108" ry="32" fill="url(#warpHullGrad)" stroke="#311b92" stroke-width="4"/>
+    <ellipse cx="120" cy="92" rx="102" ry="24" fill="#ba68c8"/>
+    <!-- Perimeter neon gems -->
+    <circle cx="35" cy="98" r="7" fill="#ffff00"/>
+    <circle cx="68" cy="106" r="8" fill="#00e676"/>
+    <circle cx="120" cy="110" r="9" fill="#ff1744"/>
+    <circle cx="172" cy="106" r="8" fill="#00e676"/>
+    <circle cx="205" cy="98" r="7" fill="#ffff00"/>
+  </svg>
+
+  <div class="warp-banner">
+    <div class="warp-title">🛸 KÍCH HOẠT CỔNG KHÔNG GIAN UFO</div>
+    <div class="warp-subtitle">Đang dịch chuyển tốc độ ánh sáng đến Game UFO...</div>
+  </div>
+
+  <div class="warp-flash"></div>
+</div>
+
+<!-- Welcome Toast when returning from UFO -->
+<div class="welcome-toast" id="welcomeToast">
+  🛸 Chào mừng bạn đã quay lại Game Túi Mù!
+</div>
+
+<!-- Seamless Embedded UFO Game Viewport (Preserves 100% Fullscreen) -->
+<div class="ufo-embedded-container" id="ufoEmbeddedContainer">
+  <iframe id="ufoEmbeddedFrame" class="ufo-embedded-frame" allow="fullscreen; autoplay" allowfullscreen></iframe>
+</div>
+
+<!-- ==========================================================
+     JAVASCRIPT LOGIC & STATE MANAGEMENT
+     ========================================================== -->
+<script>
+/* ==========================================================
+   QUESTIONS DATA (LỊCH SỬ ĐẠI HỘI II & ĐÔNG XUÂN 1953-1954)
+   ========================================================== */
+const QUESTIONS = [
+  {
+    id: 1,
+    title: 'Câu hỏi 1',
+    question: 'Đại hội đại biểu toàn quốc lần thứ II của Đảng (2/1951) đã quyết định đổi tên Đảng Cộng sản Đông Dương thành Đảng gì để phù hợp với tình hình giai đoạn mới?',
+    options: [
+      'A. Đảng Cộng sản Việt Nam',
+      'B. Đảng Lao động Việt Nam',
+      'C. Đảng Nhân dân Cách mạng Việt Nam',
+      'D. Đảng Xã hội Việt Nam'
+    ],
+    correctIndex: 1,
+    explain: 'Chính xác! Tháng 2/1951, Đại hội đại biểu toàn quốc lần II quyết định đổi tên Đảng thành Đảng Lao động Việt Nam.'
+  },
+  {
+    id: 2,
+    title: 'Câu hỏi 2',
+    question: 'Tháng 3 năm 1951, Đại hội thống nhất Việt Minh và Hội Liên Việt đã quyết định thành lập tổ chức mặt trận mới lấy tên là gì?',
+    options: [
+      'A. Mặt trận Dân tộc Giải phóng miền Nam',
+      'B. Mặt trận Liên Việt',
+      'C. Mặt trận Tổ quốc Việt Nam',
+      'D. Hội Liên hiệp Quốc dân Việt Nam'
+    ],
+    correctIndex: 1,
+    explain: 'Chính xác! Đại hội tháng 3/1951 đã thống nhất Việt Minh và Liên Việt thành Mặt trận Liên Việt.'
+  },
+  {
+    id: 3,
+    title: 'Câu hỏi 3',
+    question: 'Trong cuộc tiến công chiến lược Đông - Xuân 1953 - 1954, Bộ Tổng tư lệnh ra chủ trương tập trung lực lượng mở những cuộc tiến công vào các hướng như thế nào?',
+    options: [
+      'A. Hướng mà địch tương đối yếu mà ta có thể tiêu diệt',
+      'B. Đánh thẳng vào đầu não chỉ huy của địch ở Hà Nội',
+      'C. Đánh trực diện vào tập đoàn cứ điểm Điện Biên Phủ ngay từ đầu',
+      'D. Rút toàn bộ lực lượng về bảo vệ căn cứ địa Việt Bắc'
+    ],
+    correctIndex: 0,
+    explain: 'Chính xác! Phương châm là tiến công vào những hướng địch sơ hở, tương đối yếu nhưng có vị trí chiến lược quan trọng.'
+  },
+  {
+    id: 4,
+    title: 'Câu hỏi 4',
+    question: 'Liên quân Lào - Việt đã phối hợp thực hiện chiến dịch nào trong năm 1954 nhằm giải phóng Thượng Lào, tiêu diệt sinh lực địch và phối hợp với chiến trường chính?',
+    options: [
+      'A. Chiến dịch Trung Lào',
+      'B. Chiến dịch Thượng Lào',
+      'C. Chiến dịch Tây Bắc',
+      'D. Chiến dịch Biên giới'
+    ],
+    correctIndex: 1,
+    explain: 'Chính xác! Chiến dịch Thượng Lào đã giải phóng toàn bộ tỉnh Sầm Nưa và một phần Xiêng Khoảng, Phong Xa Lì.'
+  },
+  {
+    id: 5,
+    title: 'Câu hỏi 5',
+    question: 'Nội dung nào dưới đây phản ánh đúng cam kết của các nước tham dự Hội nghị Giơ-ne-vơ năm 1954 đối với Việt Nam?',
+    options: [
+      'A. Công nhận ngay lập tức độc lập hoàn toàn của cả Đông Dương',
+      'B. Đưa quân Liên hợp quốc vào quản lý Đông Dương',
+      'C. Cam kết tôn trọng các quyền dân tộc cơ bản: độc lập, chủ quyền, thống nhất và toàn vẹn lãnh thổ',
+      'D. Duy trì sự hiện diện quân sự của Pháp tại miền Bắc'
+    ],
+    correctIndex: 2,
+    explain: 'Chính xác! Hiệp định Giơ-ne-vơ cam kết tôn trọng độc lập, chủ quyền, thống nhất và toàn vẹn lãnh thổ của ba nước Đông Dương.'
+  }
+];
+
+/* ==========================================================
+   GAME STATE & PERSISTENCE
+   ========================================================== */
+let score = 0;
+let answeredBags = new Set();
+let activeBagId = null;
+let currentQuestion = null;
+let isAnswerLocked = false;
+let timerInterval = null;
+let timerSeconds = 0;
+
+/* Sound Synthesis using Web Audio API */
+let audioCtx = null;
+function getAudioContext() {
+  if (!audioCtx) {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (AudioContextClass) audioCtx = new AudioContextClass();
+  }
+  if (audioCtx && audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+  return audioCtx;
+}
+
+let isSoundMuted = false;
+function toggleSound() {
+  isSoundMuted = !isSoundMuted;
+  const btn = document.getElementById('soundToggleBtn');
+  if (btn) {
+    btn.innerHTML = isSoundMuted ? '<span>🔇</span> Đã tắt âm' : '<span>🔊</span> Âm thanh';
+    btn.style.opacity = isSoundMuted ? '0.75' : '1';
+  }
+}
+function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().then(() => {
+      sessionStorage.setItem('game_fullscreen', 'true');
+    }).catch(() => {});
+  } else {
+    document.exitFullscreen().then(() => {
+      sessionStorage.setItem('game_fullscreen', 'false');
+    }).catch(() => {});
+  }
+}
+
+document.addEventListener('fullscreenchange', () => {
+  const isFs = !!document.fullscreenElement;
+  sessionStorage.setItem('game_fullscreen', isFs ? 'true' : 'false');
+  const btn = document.getElementById('fsToggleBtn');
+  if (btn) btn.innerHTML = isFs ? '<span>⛶</span> Thu nhỏ' : '<span>⛶</span> Toàn màn hình';
+});
+
+// Auto-restore fullscreen if turned on in UFO page
+function tryRestoreFullscreen() {
+  if (sessionStorage.getItem('game_fullscreen') === 'true' && !document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(() => {});
+  }
+}
+const handleFirstInteraction = () => {
+  tryRestoreFullscreen();
+  window.removeEventListener('pointerdown', handleFirstInteraction);
+  window.removeEventListener('keydown', handleFirstInteraction);
+};
+window.addEventListener('pointerdown', handleFirstInteraction);
+window.addEventListener('keydown', handleFirstInteraction);
+
+function playSound(type) {
+  if (isSoundMuted) return;
+  try {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+
+    if (type === 'click') {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(600, now);
+      osc.frequency.exponentialRampToValueAtTime(850, now + 0.08);
+      gain.gain.setValueAtTime(0.2, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.08);
+    } 
+    else if (type === 'open') {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(320, now);
+      osc.frequency.exponentialRampToValueAtTime(750, now + 0.22);
+      gain.gain.setValueAtTime(0.35, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.22);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.22);
+    }
+    else if (type === 'correct') {
+      // Cheerful chime
+      [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now + i * 0.08);
+        gain.gain.setValueAtTime(0.28, now + i * 0.08);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.25);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + i * 0.08);
+        osc.stop(now + i * 0.08 + 0.25);
+      });
+    }
+    else if (type === 'wrong') {
+      // Low buzz
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(180, now);
+      osc.frequency.setValueAtTime(130, now + 0.15);
+      gain.gain.setValueAtTime(0.25, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.35);
+    }
+    else if (type === 'victory') {
+      // Fanfare
+      const notes = [440, 554.37, 659.25, 880, 880, 880, 1108.73];
+      const times = [0, 0.15, 0.3, 0.45, 0.6, 0.75, 0.9];
+      notes.forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, now + times[idx]);
+        gain.gain.setValueAtTime(0.3, now + times[idx]);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + times[idx] + 0.35);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + times[idx]);
+        osc.stop(now + times[idx] + 0.35);
+      });
+    }
+    else if (type === 'warp') {
+      // Sci-fi hyperdrive engine spin-up
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(140, now);
+      osc.frequency.exponentialRampToValueAtTime(1200, now + 1.15);
+      gain.gain.setValueAtTime(0.01, now);
+      gain.gain.linearRampToValueAtTime(0.28, now + 0.3);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 1.25);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 1.25);
+
+      // Low frequency sub-rumble
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(55, now);
+      osc2.frequency.exponentialRampToValueAtTime(260, now + 1.15);
+      gain2.gain.setValueAtTime(0.38, now);
+      gain2.gain.exponentialRampToValueAtTime(0.01, now + 1.25);
+      osc2.connect(gain2);
+      gain2.connect(ctx.destination);
+      osc2.start(now);
+      osc2.stop(now + 1.25);
+    }
+  } catch (err) {
+    console.warn('Audio playback error', err);
+  }
+}
+
+/* ==========================================================
+   INITIALIZATION & LOCALSTORAGE
+   ========================================================== */
+function initGame() {
+  // Load saved state if any
+  try {
+    const raw = localStorage.getItem('tui_mu_game_save');
+    if (raw) {
+      const data = JSON.parse(raw);
+      score = data.score || 0;
+      if (Array.isArray(data.answered)) {
+        answeredBags = new Set(data.answered);
+      }
+    }
+  } catch (e) {
+    console.warn('Error reading saved state', e);
+  }
+
+  updateScoreUI();
+  updateBagsUI();
+}
+
+function saveGameState() {
+  try {
+    const data = {
+      score: score,
+      answered: Array.from(answeredBags)
+    };
+    localStorage.setItem('tui_mu_game_save', JSON.stringify(data));
+  } catch (e) {
+    console.warn('Error saving state', e);
+  }
+}
+
+function updateScoreUI() {
+  document.getElementById('scoreDisplay').textContent = score;
+}
+
+function updateBagsUI() {
+  for (let i = 1; i <= 5; i++) {
+    const bagEl = document.getElementById(`bag-${i}`);
+    if (bagEl) {
+      if (answeredBags.has(i)) {
+        bagEl.classList.add('opened');
+      } else {
+        bagEl.classList.remove('opened');
+      }
+    }
+  }
+
+  // Check if all answered
+  if (answeredBags.size === 5) {
+    setTimeout(() => {
+      showVictoryModal();
+    }, 600);
+  }
+}
+
+/* ==========================================================
+   BAG CLICK & MODAL OPEN
+   ========================================================== */
+function handleBagClick(bagId) {
+  if (answeredBags.has(bagId)) return;
+
+  playSound('open');
+  activeBagId = bagId;
+
+  // Add click pulse feedback on the bag aura and stars
+  const clickedBag = document.getElementById(`bag-${bagId}`);
+  if (clickedBag) {
+    clickedBag.classList.add('clicked');
+    setTimeout(() => clickedBag.classList.remove('clicked'), 500);
+  }
+
+  currentQuestion = QUESTIONS.find(q => q.id === bagId) || QUESTIONS[0];
+  isAnswerLocked = false;
+
+  // Reset timer
+  clearInterval(timerInterval);
+  timerSeconds = 0;
+  document.getElementById('quizTimer').textContent = '0s';
+  timerInterval = setInterval(() => {
+    timerSeconds++;
+    document.getElementById('quizTimer').textContent = timerSeconds + 's';
+  }, 1000);
+
+  // Populate modal
+  document.getElementById('qTitle').textContent = currentQuestion.title;
+  document.getElementById('qContent').textContent = currentQuestion.question;
+
+  // Populate options
+  for (let i = 0; i < 4; i++) {
+    const btn = document.getElementById(`ansBtn${i}`);
+    btn.textContent = currentQuestion.options[i];
+    btn.disabled = false;
+    btn.classList.remove('correct-glow', 'wrong-shake', 'dimmed-gray');
+  }
+
+  // Reset feedback & next button
+  const fb = document.getElementById('feedbackBanner');
+  fb.className = 'feedback-banner';
+  fb.style.display = 'none';
+  fb.innerHTML = '';
+
+  const nextBtn = document.getElementById('modalNextBtn');
+  nextBtn.classList.remove('show');
+
+  // Open modal
+  const modal = document.getElementById('quizModal');
+  modal.classList.add('active');
+}
+
+function closeQuizModal() {
+  playSound('click');
+  clearInterval(timerInterval);
+  document.getElementById('quizModal').classList.remove('active');
+}
+
+/* ==========================================================
+   ANSWER SELECTION
+   ========================================================== */
+function handleSelectAnswer(chosenIndex) {
+  if (isAnswerLocked || !currentQuestion) return;
+  isAnswerLocked = true;
+  clearInterval(timerInterval);
+
+  // Disable all answer buttons
+  for (let i = 0; i < 4; i++) {
+    document.getElementById(`ansBtn${i}`).disabled = true;
+  }
+
+  const isCorrect = (chosenIndex === currentQuestion.correctIndex);
+  const correctBtn = document.getElementById(`ansBtn${currentQuestion.correctIndex}`);
+  const chosenBtn = document.getElementById(`ansBtn${chosenIndex}`);
+  const feedbackBanner = document.getElementById('feedbackBanner');
+
+  if (isCorrect) {
+    playSound('correct');
+    score += 20;
+    updateScoreUI();
+
+    // Câu đúng: xanh lá cây rực rỡ + biểu tượng ✅
+    correctBtn.classList.add('correct-glow');
+    correctBtn.innerHTML = `✅ ${currentQuestion.options[currentQuestion.correctIndex]}`;
+
+    // 3 câu còn lại chuyển sang màu xám mờ
+    for (let i = 0; i < 4; i++) {
+      if (i !== currentQuestion.correctIndex) {
+        document.getElementById(`ansBtn${i}`).classList.add('dimmed-gray');
+      }
+    }
+
+    triggerConfetti(60);
+
+    feedbackBanner.className = 'feedback-banner correct';
+    feedbackBanner.innerHTML = `🎉 <b>CHÍNH XÁC!</b> +20 điểm<br><span style="font-size:16px">${currentQuestion.explain}</span>`;
+  } else {
+    playSound('wrong');
+
+    // Câu chọn sai: màu đỏ + biểu tượng ❌ + rung lắc
+    chosenBtn.classList.add('wrong-shake');
+    chosenBtn.innerHTML = `❌ ${currentQuestion.options[chosenIndex]}`;
+
+    // Câu đúng: màu xanh lá cây + biểu tượng ✅ + hào quang tỏa sáng
+    correctBtn.classList.add('correct-glow');
+    correctBtn.innerHTML = `✅ ${currentQuestion.options[currentQuestion.correctIndex]}`;
+
+    // Các câu không chọn: chuyển sang màu xám mờ
+    for (let i = 0; i < 4; i++) {
+      if (i !== chosenIndex && i !== currentQuestion.correctIndex) {
+        document.getElementById(`ansBtn${i}`).classList.add('dimmed-gray');
+      }
+    }
+
+    feedbackBanner.className = 'feedback-banner wrong';
+    feedbackBanner.innerHTML = `❌ <b>CHƯA CHÍNH XÁC!</b><br><span style="font-size:16px">Đáp án đúng là: <b>${currentQuestion.options[currentQuestion.correctIndex]}</b></span>`;
+  }
+
+  feedbackBanner.style.display = 'block';
+
+  // Show Next button
+  const nextBtn = document.getElementById('modalNextBtn');
+  nextBtn.classList.add('show');
+}
+
+/* ==========================================================
+   PROCEED AFTER ANSWERING (BAG EXPLODES & DISAPPEARS)
+   ========================================================== */
+function handleProceedAfterAnswer() {
+  playSound('click');
+  closeQuizModal();
+
+  if (activeBagId !== null) {
+    answeredBags.add(activeBagId);
+    saveGameState();
+
+    const targetBag = document.getElementById(`bag-${activeBagId}`);
+    if (targetBag) {
+      targetBag.classList.add('opened');
+      triggerBagBurstParticles(targetBag);
+    }
+  }
+
+  // Check victory condition
+  if (answeredBags.size === 5) {
+    setTimeout(showVictoryModal, 700);
+  }
+}
+
+/* ==========================================================
+   CONFETTI & CELEBRATION PARTICLES
+   ========================================================== */
+const canvas = document.getElementById('confettiCanvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
+let animFrameId = null;
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+function triggerConfetti(count = 70) {
+  const colors = ['#f44336', '#e91e63', '#9c27b0', '#2196f3', '#00bcd4', '#4caf50', '#ffeb3b', '#ff9800'];
+  const centerX = canvas.width / 2;
+  const centerY = canvas.height * 0.45;
+
+  for (let i = 0; i < count; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 4 + Math.random() * 12;
+    particles.push({
+      x: centerX,
+      y: centerY,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - 3,
+      size: 5 + Math.random() * 8,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      alpha: 1,
+      decay: 0.012 + Math.random() * 0.015,
+      rotation: Math.random() * 360,
+      spin: (Math.random() - 0.5) * 12
+    });
+  }
+
+  if (!animFrameId) {
+    renderParticles();
+  }
+}
+
+function triggerBagBurstParticles(bagElement) {
+  const rect = bagElement.getBoundingClientRect();
+  const centerX = rect.left + rect.width / 2;
+  const centerY = rect.top + rect.height / 2;
+  const colors = ['#ffd700', '#ff80ab', '#80deea', '#e040fb', '#ffffff'];
+
+  for (let i = 0; i < 45; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 3 + Math.random() * 9;
+    particles.push({
+      x: centerX,
+      y: centerY,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - 2,
+      size: 4 + Math.random() * 7,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      alpha: 1,
+      decay: 0.015 + Math.random() * 0.02,
+      rotation: Math.random() * 360,
+      spin: (Math.random() - 0.5) * 15
+    });
+  }
+
+  if (!animFrameId) {
+    renderParticles();
+  }
+}
+
+function renderParticles() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.x += p.vx;
+    p.y += p.vy;
+    p.vy += 0.22; // gravity
+    p.vx *= 0.98;
+    p.alpha -= p.decay;
+    p.rotation += p.spin;
+
+    if (p.alpha <= 0) {
+      particles.splice(i, 1);
+      continue;
+    }
+
+    ctx.save();
+    ctx.globalAlpha = p.alpha;
+    ctx.translate(p.x, p.y);
+    ctx.rotate((p.rotation * Math.PI) / 180);
+    ctx.fillStyle = p.color;
+    ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+    ctx.restore();
+  }
+
+  if (particles.length > 0) {
+    animFrameId = requestAnimationFrame(renderParticles);
+  } else {
+    animFrameId = null;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+}
+
+/* ==========================================================
+   VICTORY & REPLAY
+   ========================================================== */
+function showVictoryModal() {
+  playSound('victory');
+  triggerConfetti(120);
+  document.getElementById('finalScore').textContent = score;
+  document.getElementById('victoryModal').classList.add('active');
+}
+
+function handleReplay() {
+  playSound('click');
+  score = 0;
+  answeredBags.clear();
+  try {
+    localStorage.removeItem('tui_mu_game_save');
+    localStorage.removeItem('tm');
+  } catch (e) {}
+
+  document.getElementById('victoryModal').classList.remove('active');
+  closeQuizModal();
+  updateScoreUI();
+  updateBagsUI();
+}
+
+function handleGoHome() {
+  playSound('click');
+  if (confirm('Bạn có muốn quay về màn hình chính không?')) {
+    window.location.href = '../index.html';
+  }
+}
+
+// Close modals on clicking backdrop
+document.getElementById('quizModal').addEventListener('click', function(e) {
+  if (e.target === this) closeQuizModal();
+});
+
+/* ==========================================================
+   MODERN HYPERSPACE UFO TRANSITION LOGIC
+   ========================================================== */
+let warpCanvasAnimId = null;
+
+function runWarpTunnelAnimation() {
+  const c = document.getElementById('warpTunnelCanvas');
+  if (!c) return;
+  const cx = c.getContext('2d');
+  c.width = window.innerWidth;
+  c.height = window.innerHeight;
+
+  const stars = [];
+  const numStars = 100;
+  for (let i = 0; i < numStars; i++) {
+    stars.push({
+      x: (Math.random() - 0.5) * c.width,
+      y: (Math.random() - 0.5) * c.height,
+      z: Math.random() * c.width,
+      color: ['#00e5ff', '#76ff03', '#ffffff', '#ffd54f'][Math.floor(Math.random() * 4)]
+    });
+  }
+
+  const originX = c.width / 2;
+  const originY = c.height / 2;
+
+  function step() {
+    cx.fillStyle = 'rgba(8, 2, 28, 0.28)';
+    cx.fillRect(0, 0, c.width, c.height);
+
+    for (let i = 0; i < numStars; i++) {
+      const s = stars[i];
+      s.z -= 20; // Hyper-speed velocity
+      if (s.z <= 0) {
+        s.z = c.width;
+        s.x = (Math.random() - 0.5) * c.width;
+        s.y = (Math.random() - 0.5) * c.height;
+      }
+
+      const k = 260 / s.z;
+      const px = s.x * k + originX;
+      const py = s.y * k + originY;
+
+      const prevK = 260 / (s.z + 55);
+      const prevX = s.x * prevK + originX;
+      const prevY = s.y * prevK + originY;
+
+      if (px >= 0 && px <= c.width && py >= 0 && py <= c.height) {
+        cx.beginPath();
+        cx.moveTo(prevX, prevY);
+        cx.lineTo(px, py);
+        cx.strokeStyle = s.color;
+        cx.lineWidth = Math.min(4.5, (1 - s.z / c.width) * 4.5 + 0.8);
+        cx.stroke();
+      }
+    }
+    warpCanvasAnimId = requestAnimationFrame(step);
+  }
+  step();
+}
+
+function launchUFOTransition() {
+  playSound('warp');
+  const isFs = !!document.fullscreenElement;
+  sessionStorage.setItem('game_fullscreen', isFs ? 'true' : 'false');
+  const overlay = document.getElementById('ufoHyperWarp');
+  if (overlay) {
+    overlay.classList.add('active');
+    runWarpTunnelAnimation();
+  }
+
+  const iframe = document.getElementById('ufoEmbeddedFrame');
+  const frameContainer = document.getElementById('ufoEmbeddedContainer');
+  if (iframe && frameContainer) {
+    if (!iframe.src || iframe.src === 'about:blank' || !iframe.src.includes('ufo.html')) {
+      iframe.src = 'ufo.html?from=tuimu';
+    }
+    setTimeout(() => {
+      frameContainer.classList.add('active');
+      setTimeout(() => {
+        if (overlay) overlay.classList.remove('active');
+      }, 400);
+    }, 1150);
+  } else {
+    setTimeout(() => {
+      window.location.href = 'ufo.html?from=tuimu';
+    }, 1350);
+  }
+}
+
+function closeUFOEmbeddedView() {
+  const frameContainer = document.getElementById('ufoEmbeddedContainer');
+  if (frameContainer) {
+    frameContainer.classList.remove('active');
+    playSound('correct');
+    const toast = document.getElementById('welcomeToast');
+    if (toast) {
+      setTimeout(() => toast.classList.add('show'), 200);
+      setTimeout(() => toast.classList.remove('show'), 3800);
+    }
+  }
+}
+window.closeUFOEmbeddedView = closeUFOEmbeddedView;
+
+function checkFromUFO() {
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('from') === 'ufo') {
+    playSound('correct');
+    const toast = document.getElementById('welcomeToast');
+    if (toast) {
+      setTimeout(() => toast.classList.add('show'), 350);
+      setTimeout(() => toast.classList.remove('show'), 3800);
+    }
+    // Clean URL parameter without reloading
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
+}
+
+function initAmbientSparks() {
+  const canvas = document.getElementById('ambientSparks');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let w = canvas.width = window.innerWidth;
+  let h = canvas.height = window.innerHeight;
+
+  window.addEventListener('resize', () => {
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+  });
+
+  // 1. Golden Fireflies & Stardust (Đom đóm & Tinh tú lấp lánh)
+  const SPARKS_COUNT = 34;
+  const sparks = Array.from({ length: SPARKS_COUNT }, () => ({
+    x: Math.random() * w,
+    y: Math.random() * h,
+    size: Math.random() * 2.5 + 1.2,
+    speedY: Math.random() * 0.42 + 0.18,
+    speedX: (Math.random() - 0.5) * 0.32,
+    opacity: Math.random() * 0.65 + 0.35,
+    pulseSpeed: Math.random() * 0.028 + 0.014,
+    pulse: Math.random() * Math.PI * 2,
+    color: Math.random() > 0.4 ? '#fff9c4' : (Math.random() > 0.5 ? '#ffd54f' : '#b2ff59')
+  }));
+
+  // 2. Swirling Peach Blossom Petals (Cánh hoa đào rơi chao nghiêng trong gió)
+  const PETALS_COUNT = 32;
+  const petals = Array.from({ length: PETALS_COUNT }, () => ({
+    x: Math.random() * (w + 200) - 100,
+    y: Math.random() * h - 20,
+    size: Math.random() * 5 + 6.5,
+    speedY: Math.random() * 0.75 + 0.65,
+    speedX: Math.random() * 0.7 + 0.45,
+    sway: Math.random() * Math.PI * 2,
+    swaySpeed: Math.random() * 0.035 + 0.02,
+    swayRadius: Math.random() * 18 + 12,
+    rotation: Math.random() * Math.PI * 2,
+    rotationSpeed: (Math.random() - 0.5) * 0.03,
+    flip: Math.random() * Math.PI * 2,
+    flipSpeed: Math.random() * 0.035 + 0.02,
+    opacity: Math.random() * 0.35 + 0.65,
+    color1: Math.random() > 0.3 ? '#ff8da1' : '#ff6f91',
+    color2: '#ffcdd2'
+  }));
+
+  function draw() {
+    ctx.clearRect(0, 0, w, h);
+
+    // Render falling petals with 3D wind tumbling
+    petals.forEach(p => {
+      p.y += p.speedY;
+      p.x += p.speedX;
+      p.sway += p.swaySpeed;
+      p.rotation += p.rotationSpeed;
+      p.flip += p.flipSpeed;
+
+      if (p.y > h + 25 || p.x > w + 40) {
+        p.y = -25 - Math.random() * 50;
+        p.x = Math.random() * (w * 1.1) - w * 0.15;
+      }
+
+      const swayOffset = Math.sin(p.sway) * p.swayRadius;
+      const flipScale = Math.cos(p.flip);
+
+      ctx.save();
+      ctx.translate(p.x + swayOffset, p.y);
+      ctx.rotate(p.rotation);
+      ctx.scale(Math.abs(flipScale) < 0.1 ? 0.1 : flipScale, 1);
+      ctx.globalAlpha = p.opacity;
+
+      const grad = ctx.createLinearGradient(-p.size, -p.size, p.size, p.size);
+      grad.addColorStop(0, p.color1);
+      grad.addColorStop(1, p.color2);
+      ctx.fillStyle = grad;
+
+      ctx.beginPath();
+      ctx.moveTo(0, -p.size);
+      ctx.bezierCurveTo(p.size * 0.95, -p.size * 0.65, p.size * 0.85, p.size * 0.75, 0, p.size);
+      ctx.bezierCurveTo(-p.size * 0.85, p.size * 0.75, -p.size * 0.95, -p.size * 0.65, 0, -p.size);
+      ctx.fill();
+
+      // Delicate center vein
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+      ctx.lineWidth = 0.8;
+      ctx.beginPath();
+      ctx.moveTo(0, -p.size * 0.65);
+      ctx.lineTo(0, p.size * 0.6);
+      ctx.stroke();
+
+      ctx.restore();
+    });
+
+    // Render golden fireflies
+    sparks.forEach(s => {
+      s.y -= s.speedY;
+      s.x += s.speedX;
+      s.pulse += s.pulseSpeed;
+      if (s.y < -20) {
+        s.y = h + 10;
+        s.x = Math.random() * w;
+      }
+      if (s.x < -20) s.x = w + 10;
+      if (s.x > w + 20) s.x = -10;
+
+      const alpha = (Math.sin(s.pulse) * 0.5 + 0.5) * s.opacity;
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = s.color;
+      ctx.shadowColor = s.color;
+      ctx.shadowBlur = 9;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Star flare on brighter sparks
+      if (s.size > 2.4 && alpha > 0.55) {
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 0.8;
+        ctx.beginPath();
+        ctx.moveTo(s.x - s.size * 2, s.y);
+        ctx.lineTo(s.x + s.size * 2, s.y);
+        ctx.moveTo(s.x, s.y - s.size * 2);
+        ctx.lineTo(s.x, s.y + s.size * 2);
+        ctx.stroke();
+      }
+      ctx.restore();
+    });
+
+    requestAnimationFrame(draw);
+  }
+  requestAnimationFrame(draw);
+}
+
+// Run initialization on page load
+window.addEventListener('DOMContentLoaded', () => {
+  initGame();
+  checkFromUFO();
+  initAmbientSparks();
+});
+</script>
+
+</body>
+</html>
