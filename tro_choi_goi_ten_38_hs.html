@@ -1297,21 +1297,39 @@
           hitStopTimer = 0.5;
 
           // 2. Rung chấn màn hình tạo sức nặng đòn chém
-          screenShake = 14;
+          screenShake = 18;
 
           // 2B. Zoom màn hình cận cảnh vào người bị đánh rồi nhả zoom lại bình thường
           triggerHitZoom(victim, 2.15, 0.85);
 
-          // 3. Giật sét theo màu đội tấn công (Đội đỏ sét đỏ, Đội xanh sét xanh)
-          for (let a = 0; a < 8; a++) {
-            const aAng = Math.random() * Math.PI * 2;
-            const aLen = 42 + Math.random() * 56;
+          // 3. Giật sét Hắc Lôi / Hắc Viêm uy lực chồng layer đè lên cơ thể đối thủ
+          // 3A. Các tia sét chém xé toạc xuyên qua thân hình nạn nhân (Cross-cutting bolts)
+          for (let c = 0; c < 5; c++) {
+            const crossAng = angle + (Math.PI / 2) + (c - 2) * 0.32;
+            const cHalfLen = 46 + Math.random() * 32;
             brElectricArcs.push({
-              x1: victim.x,
-              y1: victim.y,
+              x1: victim.x - Math.cos(crossAng) * cHalfLen,
+              y1: victim.y - Math.sin(crossAng) * cHalfLen,
+              x2: victim.x + Math.cos(crossAng) * cHalfLen,
+              y2: victim.y + Math.sin(crossAng) * cHalfLen,
+              color: strikeColor,
+              darkBorder: true,
+              thick: true
+            });
+          }
+
+          // 3B. Các tia sét hồ quang bùng nổ tỏa ra xung quanh từ tâm điểm đòn trảm
+          for (let a = 0; a < 10; a++) {
+            const aAng = Math.random() * Math.PI * 2;
+            const aLen = 52 + Math.random() * 68;
+            brElectricArcs.push({
+              x1: victim.x + (Math.random() - 0.5) * victim.radius * 0.8,
+              y1: victim.y + (Math.random() - 0.5) * victim.radius * 0.8,
               x2: victim.x + Math.cos(aAng) * aLen,
               y2: victim.y + Math.sin(aAng) * aLen,
-              color: strikeColor
+              color: strikeColor,
+              darkBorder: true,
+              thick: true
             });
           }
 
@@ -1325,8 +1343,9 @@
             color: strikeAlphaPrefix
           });
 
-          // 5. Bùng nổ hạt tia lửa theo màu sét của phe chém
-          spawnCartoonBurst(victim.x, victim.y, strikeColor, 20, true);
+          // 5. Bùng nổ hạt hắc viêm và tia lửa theo màu sét của phe chém
+          spawnCartoonBurst(victim.x, victim.y, "#050505", 14, false);
+          spawnCartoonBurst(victim.x, victim.y, strikeColor, 22, true);
 
           // 6. Đòn đánh làm đối thủ bị đẩy văng ra CỰC XA (Extreme Knockback)
           const extremeKnock = 820;
@@ -2721,23 +2740,121 @@
       }
     }
 
-    function drawLightningBolt(ctx, x1, y1, x2, y2, color = "#fde047") {
+    function drawLightningBolt(ctx, x1, y1, x2, y2, color = "#fde047", hasDarkBorder = false, isThick = false) {
       ctx.save();
-      ctx.beginPath();
-      ctx.moveTo(x1, y1);
-      const steps = 5;
+      const dx = x2 - x1;
+      const dy = y2 - y1;
+      const dist = Math.hypot(dx, dy) || 1;
+      const nx = -dy / dist;
+      const ny = dx / dist;
+
+      const steps = Math.max(5, Math.min(9, Math.round(dist / 14)));
+      const points = [{ x: x1, y: y1 }];
+      const maxJitter = isThick ? 22 : 14;
+
       for (let i = 1; i < steps; i++) {
         const t = i / steps;
-        const mx = x1 + (x2 - x1) * t + (Math.random() - 0.5) * 18;
-        const my = y1 + (y2 - y1) * t + (Math.random() - 0.5) * 18;
-        ctx.lineTo(mx, my);
+        const jitter = (Math.random() - 0.5) * 2 * maxJitter;
+        const px = x1 + dx * t + nx * jitter;
+        const py = y1 + dy * t + ny * jitter;
+        points.push({ x: px, y: py });
       }
-      ctx.lineTo(x2, y2);
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 3;
-      ctx.shadowColor = color;
-      ctx.shadowBlur = 10;
-      ctx.stroke();
+      points.push({ x: x2, y: y2 });
+
+      function traceBolt() {
+        ctx.beginPath();
+        ctx.moveTo(points[0].x, points[0].y);
+        for (let i = 1; i < points.length; i++) {
+          ctx.lineTo(points[i].x, points[i].y);
+        }
+      }
+
+      ctx.lineCap = "round";
+      ctx.lineJoin = "miter";
+
+      if (hasDarkBorder || isThick) {
+        // ==========================================
+        // 1. TẦNG NGOÀI CÙNG: VIỀN ĐEN HẮC LÔI / HẮC VIÊM DÀY DẶN UY LỰC (#000000)
+        // ==========================================
+        ctx.save();
+        traceBolt();
+        ctx.strokeStyle = "#000000";
+        ctx.lineWidth = isThick ? 10.5 : 7.5;
+        ctx.shadowColor = "#000000";
+        ctx.shadowBlur = 10;
+        ctx.stroke();
+        ctx.restore();
+
+        // ==========================================
+        // 2. TẦNG GIỮA: MÀU SÉT ĐỎ RỰC / XANH HUỲNH QUANG NỔ BÙNG NĂNG LƯỢNG
+        // ==========================================
+        ctx.save();
+        traceBolt();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = isThick ? 5.2 : 3.8;
+        ctx.shadowColor = color;
+        ctx.shadowBlur = 18;
+        ctx.stroke();
+        ctx.restore();
+
+        // ==========================================
+        // 3. TẦNG LÕI TRONG: LÕI PHÁT SÁNG TRẮNG CHÓI LÒI (WHITE-HOT CORE)
+        // ==========================================
+        ctx.save();
+        traceBolt();
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = isThick ? 2.4 : 1.6;
+        ctx.shadowColor = "#ffffff";
+        ctx.shadowBlur = 6;
+        ctx.stroke();
+        ctx.restore();
+
+        // 4. Nhánh sét phụ tóe ra (Secondary Fork Arcs)
+        if (points.length >= 4 && Math.random() < 0.65) {
+          const forkIdx = Math.floor(points.length / 2);
+          const fStart = points[forkIdx];
+          const forkAng = Math.atan2(dy, dx) + (Math.random() < 0.5 ? 0.78 : -0.78);
+          const forkLen = 18 + Math.random() * 24;
+          const fx2 = fStart.x + Math.cos(forkAng) * forkLen;
+          const fy2 = fStart.y + Math.sin(forkAng) * forkLen;
+
+          const fMidX = (fStart.x + fx2) / 2 + nx * (Math.random() - 0.5) * 14;
+          const fMidY = (fStart.y + fy2) / 2 + ny * (Math.random() - 0.5) * 14;
+
+          function traceFork() {
+            ctx.beginPath();
+            ctx.moveTo(fStart.x, fStart.y);
+            ctx.lineTo(fMidX, fMidY);
+            ctx.lineTo(fx2, fy2);
+          }
+
+          ctx.strokeStyle = "#000000";
+          ctx.lineWidth = 5.5;
+          traceFork();
+          ctx.stroke();
+
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 2.6;
+          ctx.shadowColor = color;
+          ctx.shadowBlur = 12;
+          traceFork();
+          ctx.stroke();
+
+          ctx.strokeStyle = "#ffffff";
+          ctx.lineWidth = 1.2;
+          traceFork();
+          ctx.stroke();
+        }
+      } else {
+        // Tia sét thường (ví dụ vòng bo)
+        traceBolt();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 3.5;
+        ctx.shadowColor = color;
+        ctx.shadowBlur = 10;
+        ctx.stroke();
+      }
+
       ctx.restore();
     }
 
@@ -3714,11 +3831,6 @@
         drawElectricStormZone(ctx, brZone.x, brZone.y, brZone.r, nowMs);
       }
 
-      // 5. Active Lightning Zaps (vẽ cả vòng bo lẫn tia sét đòn chém kiếm 1v1)
-      brElectricArcs.forEach(arc => {
-        drawLightningBolt(ctx, arc.x1, arc.y1, arc.x2, arc.y2, arc.color || "#fde047");
-      });
-
       // 6. Cartoon Shockwaves & Sword Slash Crescent Arcs
       brShockwaves.forEach(sw => {
         ctx.save();
@@ -3813,6 +3925,21 @@
         const distFromZone = Math.hypot(p.x - brZone.x, p.y - brZone.y);
         const isOutside = distFromZone > brZone.r;
         drawCartoonCharacter(ctx, p, nowMs, isOutside, false);
+      });
+
+      // 8B. ACTIVE LIGHTNING BOLTS & HẮC LÔI OVERLAY (CHỒNG LAYER LÊN TRÊN NHÂN VẬT!)
+      // Vẽ đè trực tiếp lên mặt, thân và vũ khí của nhân vật để đòn đánh cực kỳ uy lực và rõ nét!
+      brElectricArcs.forEach(arc => {
+        drawLightningBolt(
+          ctx,
+          arc.x1,
+          arc.y1,
+          arc.x2,
+          arc.y2,
+          arc.color || "#fde047",
+          arc.darkBorder !== undefined ? arc.darkBorder : true,
+          arc.thick !== undefined ? arc.thick : true
+        );
       });
 
       // 9. CINEMATIC DARKSTAGE & SPOTLIGHT REVEAL FOR WINNER!
@@ -4928,14 +5055,17 @@
                 }
 
                 // Tia chớp điện hồ quang phóng ra từ tâm nổ
-                for (let a = 0; a < 4; a++) {
+                for (let a = 0; a < 6; a++) {
                   const arcAng = Math.random() * Math.PI * 2;
-                  const arcLen = 30 + Math.random() * 48;
+                  const arcLen = 35 + Math.random() * 55;
                   brElectricArcs.push({
                     x1: midX,
                     y1: midY,
                     x2: midX + Math.cos(arcAng) * arcLen,
-                    y2: midY + Math.sin(arcAng) * arcLen
+                    y2: midY + Math.sin(arcAng) * arcLen,
+                    color: a % 2 === 0 ? "#ef4444" : "#00f5d4",
+                    darkBorder: true,
+                    thick: true
                   });
                 }
 
