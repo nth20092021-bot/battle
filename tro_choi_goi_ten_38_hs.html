@@ -550,11 +550,23 @@
     let brZone = { x: 0, y: 0, r: 450, maxR: 450, startX: 0, startY: 0, targetCenterX: 0, targetCenterY: 0 };
     let brAirdrop = null;
 
-    // Winner Camera Zoom state
+    // Winner & Combat Camera Zoom state
     let camera = { x: 0, y: 0, zoom: 1, targetX: 0, targetY: 0, targetZoom: 1 };
     let zoomWinnerPlayer = null;
     let winnerRevealAlpha = 0;
     let activeWinnerPerk = null;
+    let hitZoomVictim = null;
+    let hitZoomTimer = 0;
+    let hitZoomDuration = 0;
+    let hitZoomLevel = 2.15;
+
+    function triggerHitZoom(victim, zoomLevel = 2.15, duration = 0.85) {
+      if (!victim) return;
+      hitZoomVictim = victim;
+      hitZoomLevel = zoomLevel;
+      hitZoomDuration = duration;
+      hitZoomTimer = duration;
+    }
 
     // ==========================================
     // 3. SYNTHESIZED SOUND EFFECTS (WEB AUDIO API)
@@ -1287,6 +1299,9 @@
           // 2. Rung chấn màn hình tạo sức nặng đòn chém
           screenShake = 14;
 
+          // 2B. Zoom màn hình cận cảnh vào người bị đánh rồi nhả zoom lại bình thường
+          triggerHitZoom(victim, 2.15, 0.85);
+
           // 3. Giật sét theo màu đội tấn công (Đội đỏ sét đỏ, Đội xanh sét xanh)
           for (let a = 0; a < 8; a++) {
             const aAng = Math.random() * Math.PI * 2;
@@ -1535,6 +1550,8 @@
       brParticles = []; // Xóa sạch toàn bộ hạt cũ để màn hình giới thiệu trong trẻo, sạch sẽ 100%!
       brShockwaves = [];
       brSlashEffects = [];
+      hitZoomVictim = null;
+      hitZoomTimer = 0;
 
       // 3. Drop fresh items from scratch, prioritizing Sword (`⚔️`) and Shield (`🛡️`) as normal!
       brItems = [];
@@ -1725,6 +1742,8 @@
       brElectricArcs = [];
       brAirdrop = null;
       hitStopTimer = 0;
+      hitZoomVictim = null;
+      hitZoomTimer = 0;
 
       startIdleLoop();
     }
@@ -4211,6 +4230,8 @@
           brParticles = []; // Xóa sạch toàn bộ hạt để tuyệt đối không có hình tròn nào che nhân vật trong intro!
           brShockwaves = [];
           brSlashEffects = [];
+      hitZoomVictim = null;
+      hitZoomTimer = 0;
 
           // Căn camera bao quát cả 2 đấu sĩ trên võ đài, không phóng quá gần để quan sát rõ cả 2 nhân vật
           const midIntroX = (duelIntroState.p1.x + duelIntroState.p2.x) / 2;
@@ -4237,6 +4258,66 @@
           return;
         }
 
+        const minR = rule === "airdrop" ? 75 : (arenaStage === 1 ? 85 : arenaStage === 2 ? 42 : 18);
+
+        // ==========================================
+        // CẬP NHẬT CAMERA: THEO DÕI ĐẤU TRƯỜNG HOẶC ZOOM CẬN CẢNH VÀO NGƯỜI BỊ ĐÁNH KHI BỊ TRÚNG ĐÒN!
+        // ==========================================
+        let defaultTargetX = w / 2;
+        let defaultTargetY = h / 2;
+        let defaultTargetZoom = 1.0;
+
+        if (arenaStage === 3) {
+          if (aliveList.length >= 2) {
+            const pA = aliveList[0];
+            const pB = aliveList[1];
+            defaultTargetX = (pA.x + pB.x) / 2;
+            defaultTargetY = (pA.y + pB.y) / 2;
+            const distAB = Math.hypot(pA.x - pB.x, pA.y - pB.y);
+            defaultTargetZoom = Math.min(1.35, Math.max(0.96, (w * 0.52) / Math.max(160, distAB + 130)));
+          } else if (aliveList.length === 1) {
+            defaultTargetX = aliveList[0].x;
+            defaultTargetY = aliveList[0].y;
+            defaultTargetZoom = 1.8;
+          }
+        } else if (arenaStage === 2) {
+          const zoneShrinkRatio2 = Math.max(0, Math.min(1, 1 - (brZone.r - minR) / Math.max(1, brZone.maxR - minR)));
+          defaultTargetX = brZone.x;
+          defaultTargetY = brZone.y;
+          defaultTargetZoom = 1.0 + zoneShrinkRatio2 * 0.88;
+        }
+
+        if (hitZoomTimer > 0 && hitZoomVictim) {
+          hitZoomTimer -= dt;
+          // Pha nhả zoom (release phase): trong 0.32s cuối, kéo mượt từ 1.0 về 0.0 để camera zoom lại bình thường
+          const releasePhase = 0.32;
+          let blend = 1.0;
+          if (hitZoomTimer < releasePhase) {
+            blend = Math.max(0, hitZoomTimer / releasePhase);
+          }
+          camera.targetX = defaultTargetX + (hitZoomVictim.x - defaultTargetX) * blend;
+          camera.targetY = defaultTargetY + (hitZoomVictim.y - defaultTargetY) * blend;
+          camera.targetZoom = defaultTargetZoom + (hitZoomLevel - defaultTargetZoom) * blend;
+
+          // Lúc mới trúng lao vào cực nhanh (punch-in 0.28), khi nhả thì lướt mượt mà về vị trí thường
+          const zoomFollowSpeed = blend > 0.85 ? 0.28 : 0.14;
+          camera.x += (camera.targetX - camera.x) * zoomFollowSpeed;
+          camera.y += (camera.targetY - camera.y) * zoomFollowSpeed;
+          camera.zoom += (camera.targetZoom - camera.zoom) * zoomFollowSpeed;
+
+          if (hitZoomTimer <= 0) {
+            hitZoomVictim = null;
+          }
+        } else {
+          camera.targetX = defaultTargetX;
+          camera.targetY = defaultTargetY;
+          camera.targetZoom = defaultTargetZoom;
+          const camFollowSpeed = arenaStage === 3 ? 0.10 : arenaStage === 2 ? 0.045 : 0.07;
+          camera.x += (camera.targetX - camera.x) * camFollowSpeed;
+          camera.y += (camera.targetY - camera.y) * camFollowSpeed;
+          camera.zoom += (camera.targetZoom - camera.zoom) * camFollowSpeed;
+        }
+
         // Hit-stop Frame Freeze (~0.5s khựng hình tạo uy lực khi trảm kiếm không khiên ở 1v1)
         if (hitStopTimer > 0) {
           hitStopTimer -= dt;
@@ -4252,7 +4333,6 @@
           : arenaStage === 2
             ? stage2Duration
             : stage3Duration;
-        const minR = rule === "airdrop" ? 75 : (arenaStage === 1 ? 85 : arenaStage === 2 ? 42 : 18);
         const progress = Math.min(1, stageElapsed / currentStageMaxTime);
 
         if (arenaStage !== 3) {
@@ -4267,35 +4347,6 @@
           itemSpawnTimer = arenaStage === 3 ? 1.4 : 1.2;
           spawnArenaItem(arenaStage === 3 ? false : null);
         }
-
-        // Camera framing: Ở Stage 3, Camera tự động bám theo 2 đấu sĩ và co giãn để luôn nhìn thấy cả 2!
-        if (arenaStage === 3) {
-          if (aliveList.length >= 2) {
-            const pA = aliveList[0];
-            const pB = aliveList[1];
-            camera.targetX = (pA.x + pB.x) / 2;
-            camera.targetY = (pA.y + pB.y) / 2;
-            const distAB = Math.hypot(pA.x - pB.x, pA.y - pB.y);
-            camera.targetZoom = Math.min(1.35, Math.max(0.96, (w * 0.52) / Math.max(160, distAB + 130)));
-          } else if (aliveList.length === 1) {
-            camera.targetX = aliveList[0].x;
-            camera.targetY = aliveList[0].y;
-            camera.targetZoom = 1.8;
-          }
-        } else if (arenaStage === 2) {
-          const zoneShrinkRatio2 = Math.max(0, Math.min(1, 1 - (brZone.r - minR) / Math.max(1, brZone.maxR - minR)));
-          camera.targetX = brZone.x;
-          camera.targetY = brZone.y;
-          camera.targetZoom = 1.0 + zoneShrinkRatio2 * 0.88;
-        } else {
-          camera.targetX = w / 2;
-          camera.targetY = h / 2;
-          camera.targetZoom = 1.0;
-        }
-        const camFollowSpeed = arenaStage === 3 ? 0.10 : arenaStage === 2 ? 0.045 : 0.07;
-        camera.x += (camera.targetX - camera.x) * camFollowSpeed;
-        camera.y += (camera.targetY - camera.y) * camFollowSpeed;
-        camera.zoom += (camera.targetZoom - camera.zoom) * camFollowSpeed;
 
         if (rule === "last") {
           if (arenaStage === 1) {
@@ -4920,6 +4971,9 @@
                 target.vy += Math.sin(hitAng) * knock;
               }
               target.shockTimer = 0.25;
+              if (arenaStage === 3 && hitZoomTimer <= 0) {
+                triggerHitZoom(target, 1.45, 0.35);
+              }
 
               brShockwaves.push({ x: target.x, y: target.y, r: 6, maxR: 68, alpha: 1.0 });
               spawnCartoonBurst(target.x, target.y, kb.glowColor, 16, true);
