@@ -239,6 +239,7 @@
             <span>🎯</span>
             <select id="brRuleSelect" class="bg-transparent font-black text-indigo-950 focus:outline-none cursor-pointer">
               <option value="last" selected>🏆 Sống Sót Cuối Cùng (Top 1)</option>
+              <option value="duel">⚔️ Chỉ Chơi 1vs1 (Random 2 HS)</option>
               <option value="airdrop">🎁 Ai Nhặt Rương Kho Báu Trước</option>
             </select>
           </div>
@@ -1697,38 +1698,50 @@
         targetCenterY: cy + (Math.random() - 0.5) * 45
       };
 
-      const pool = getActiveStudents();
+      const currentRule = document.getElementById("brRuleSelect")?.value || "last";
+      const fullPool = getActiveStudents();
+      let pool = fullPool;
+
+      if (currentRule === "duel") {
+        if (fullPool.length >= 2) {
+          const shuffled = [...fullPool].sort(() => Math.random() - 0.5);
+          pool = [shuffled[0], shuffled[1]];
+        }
+        arenaStage = 3;
+        document.body.classList.remove("deathmatch-theme");
+        document.body.classList.add("duel-theme");
+        document.getElementById("deathmatchBanner").classList.add("hidden");
+        document.getElementById("brZonePhaseBadge").innerHTML = "<span>⚔️ CHẾ ĐỘ 1VS1: ĐẤU TRƯỜNG NHẬT BẢN (RANDOM 2 HS)</span>";
+      } else {
+        arenaStage = 1;
+        document.body.classList.remove("duel-theme");
+        document.body.classList.remove("deathmatch-theme");
+        document.getElementById("deathmatchBanner").classList.add("hidden");
+        document.getElementById("brZonePhaseBadge").innerHTML = "<span>🏛️ VÒNG 1: ĐẤU TRƯỜNG LA MÃ</span>";
+      }
+
       lastEliminatedPlayers = [];
       document.getElementById("brAliveCount").textContent = pool.length;
       document.getElementById("brTotalCount").textContent = pool.length;
-      document.getElementById("brZonePhaseBadge").innerHTML = "<span>🏛️ VÒNG 1: ĐẤU TRƯỜNG LA MÃ</span>";
       document.getElementById("brKillFeed").innerHTML = "";
 
-      const baseCharRadius = pool.length > 30 ? 15.5 : 17.5;
-
-      brPlayers = pool.map((st, idx) => {
-        const goldenAngle = idx * 2.39996;
-        const rRatio = Math.sqrt((idx + 0.5) / Math.max(1, pool.length)) * 0.85;
-        const px = cx + Math.cos(goldenAngle) * (w * 0.38) * rRatio;
-        const py = cy + Math.sin(goldenAngle) * (h * 0.38) * rRatio;
-        const speedAngle = Math.random() * Math.PI * 2;
-
-        return {
+      if (currentRule === "duel" && pool.length === 2) {
+        brPlayers = pool.map((st, idx) => ({
           student: st,
-          x: px,
-          y: py,
-          vx: Math.cos(speedAngle) * (58 + Math.random() * 42),
-          vy: Math.sin(speedAngle) * (58 + Math.random() * 42),
-          baseRadius: baseCharRadius,
-          radius: baseCharRadius,
+          x: cx + (idx === 0 ? -w * 0.22 : w * 0.22),
+          y: cy,
+          vx: 0,
+          vy: 0,
+          baseRadius: 18.5,
+          radius: 18.5,
           color: st.color || CARTOON_PALETTE[idx % CARTOON_PALETTE.length],
           skinId: st.skinId !== undefined ? st.skinId : (idx % TOTAL_SKINS),
-          hp: PLAYER_MAX_HP,
-          maxHp: PLAYER_MAX_HP,
+          hp: 100,
+          maxHp: 100,
           alive: true,
           hopPhase: Math.random() * Math.PI * 2,
           shockTimer: 0,
-          dashCooldown: 0.4 + Math.random() * 1.4,
+          dashCooldown: 0.4,
           sizeTimer: 0,
           sizeMode: "normal",
           shieldTimer: 0,
@@ -1738,12 +1751,55 @@
           swordCooldown: 0,
           dashTrailTimer: 0,
           headNotice: null,
-          duelSide: null,
-          duelDashCooldown: 0,
+          duelSide: idx === 0 ? "red" : "blue",
+          duelDashCooldown: idx === 0 ? 0.8 : 1.8,
           shootCooldown: 0,
-          isDuelDashing: 0
-        };
-      });
+          kiBlastCooldown: idx === 0 ? 0.8 : 2.0,
+          dodgeCooldown: 0,
+          isDuelDashing: 0,
+          isDodging: 0
+        }));
+      } else {
+        const baseCharRadius = pool.length > 30 ? 15.5 : 17.5;
+        brPlayers = pool.map((st, idx) => {
+          const goldenAngle = idx * 2.39996;
+          const rRatio = Math.sqrt((idx + 0.5) / Math.max(1, pool.length)) * 0.85;
+          const px = cx + Math.cos(goldenAngle) * (w * 0.38) * rRatio;
+          const py = cy + Math.sin(goldenAngle) * (h * 0.38) * rRatio;
+          const speedAngle = Math.random() * Math.PI * 2;
+
+          return {
+            student: st,
+            x: px,
+            y: py,
+            vx: Math.cos(speedAngle) * (58 + Math.random() * 42),
+            vy: Math.sin(speedAngle) * (58 + Math.random() * 42),
+            baseRadius: baseCharRadius,
+            radius: baseCharRadius,
+            color: st.color || CARTOON_PALETTE[idx % CARTOON_PALETTE.length],
+            skinId: st.skinId !== undefined ? st.skinId : (idx % TOTAL_SKINS),
+            hp: PLAYER_MAX_HP,
+            maxHp: PLAYER_MAX_HP,
+            alive: true,
+            hopPhase: Math.random() * Math.PI * 2,
+            shockTimer: 0,
+            dashCooldown: 0.4 + Math.random() * 1.4,
+            sizeTimer: 0,
+            sizeMode: "normal",
+            shieldTimer: 0,
+            ghostTimer: 0,
+            hasHammer: false,
+            swordCharges: 0,
+            swordCooldown: 0,
+            dashTrailTimer: 0,
+            headNotice: null,
+            duelSide: null,
+            duelDashCooldown: 0,
+            shootCooldown: 0,
+            isDuelDashing: 0
+          };
+        });
+      }
 
       brItems = [];
       for (let i = 0; i < 11; i++) {
@@ -4275,14 +4331,22 @@
         finishWinnerAndPlayNext(true, 0);
       }
 
+      const rule = document.getElementById("brRuleSelect").value;
       const pool = getActiveStudents();
-      if (pool.length === 0) {
-        showToast("Tất cả học sinh đều đã được gọi! Hãy bấm 'Đặt lại 38/38'.");
-        return;
+      if (rule === "duel") {
+        if (pool.length < 2) {
+          showToast("Cần ít nhất 2 học sinh để đấu 1vs1! Hãy bấm 'Đặt lại 38/38'.");
+          return;
+        }
+      } else {
+        if (pool.length === 0) {
+          showToast("Tất cả học sinh đều đã được gọi! Hãy bấm 'Đặt lại 38/38'.");
+          return;
+        }
       }
 
       initBattleRoyaleArena();
-      if (pool.length === 1) {
+      if (rule !== "duel" && pool.length === 1) {
         triggerZoomWinner(brPlayers[0]);
         return;
       }
@@ -4291,14 +4355,13 @@
       isBusy = true;
       brActive = true;
 
-      const rule = document.getElementById("brRuleSelect").value;
       const targetDurationSec = Number(document.getElementById("brSpeedSelect").value) || 18;
       const canvas = document.getElementById("brCanvas");
       const w = canvas.width;
       const h = canvas.height;
 
-      // Handle initial stage if starting with <= 2 or <= 10 students
-      if (pool.length === 2) {
+      // Handle initial stage if starting with duel mode or <= 2 or <= 10 students
+      if (rule === "duel" || pool.length === 2) {
         triggerStage3FinalDuel(brPlayers);
       } else if (pool.length <= 10) {
         triggerStage2DeathmatchArena(brPlayers);
@@ -4484,6 +4547,9 @@
             document.getElementById("brZonePhaseBadge").innerHTML =
               `<span>⚡ CHUNG KẾT 1 VS 1: QUYẾT ĐẤU!</span>`;
           }
+        } else if (rule === "duel") {
+          document.getElementById("brZonePhaseBadge").innerHTML =
+            `<span>⚔️ ĐẠI CHIẾN 1VS1: QUYẾT ĐẤU ĐỈNH CAO!</span>`;
         }
 
         let airdropWinner = null;
@@ -5469,6 +5535,10 @@
       });
 
       window.addEventListener("resize", () => {
+        if (!brActive && !zoomWinnerPlayer) initBattleRoyaleArena();
+      });
+
+      document.getElementById("brRuleSelect").addEventListener("change", () => {
         if (!brActive && !zoomWinnerPlayer) initBattleRoyaleArena();
       });
     });
