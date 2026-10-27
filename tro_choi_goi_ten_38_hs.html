@@ -1345,13 +1345,13 @@
           spawnCartoonBurst(victim.x, victim.y, strikeColor, 22, true);
 
           // 6. Đòn đánh làm đối thủ bị đẩy văng ra CỰC XA (Extreme Knockback)
-          const extremeKnock = 820;
-          victim.hp -= 20;
-          victim.shockTimer = 0.55;
+          const extremeKnock = 1100;
+          victim.hp -= 25;
+          victim.shockTimer = 0.75;
           victim.vx = Math.cos(angle) * extremeKnock;
           victim.vy = Math.sin(angle) * extremeKnock;
-          attacker.vx -= Math.cos(angle) * 70;
-          attacker.vy -= Math.sin(angle) * 70;
+          attacker.vx -= Math.cos(angle) * 75;
+          attacker.vy -= Math.sin(angle) * 75;
 
           // Âm thanh uy lực
           playElectricZap(isRed ? 420 : 560, isRed ? 80 : 110, 0.28);
@@ -1360,7 +1360,7 @@
           spawnFloatingIcon(
             victim.x,
             victim.y - victim.radius - 18,
-            isRed ? "⚡⚔️ HỎA TRẢM! -20" : "⚡⚔️ LÔI TRẢM! -20",
+            isRed ? "⚡⚔️ HỎA TRẢM! -25" : "⚡⚔️ LÔI TRẢM! -25",
             isRed ? "#fecaca" : "#bae6fd"
           );
         } else {
@@ -1374,15 +1374,16 @@
           spawnFloatingIcon(victim.x, victim.y - victim.radius - 14, "⚔️-18", "#fde047");
         }
       } else {
-        // Khi có Khiên: giảm sát thương Kiếm từ 10 xuống chỉ còn 6 HP, không giật sét, không khựng hình!
-        victim.hp -= 6;
+        // Khi có Khiên: giảm lượng miễn sát thương ở 1v1 (gây 10 HP thay vì 6 HP) để trận đấu nhanh hơn 2-3s!
+        const shieldDmg = arenaStage === 3 ? 10 : 6;
+        victim.hp -= shieldDmg;
         victim.shockTimer = 0.24;
         const shieldedKnock = arenaStage >= 2 ? slashKnockback * 0.72 : 120;
         victim.vx = Math.cos(angle) * shieldedKnock;
         victim.vy = Math.sin(angle) * shieldedKnock;
         attacker.vx -= Math.cos(angle) * 75;
         attacker.vy -= Math.sin(angle) * 75;
-        spawnFloatingIcon(victim.x, victim.y - victim.radius - 14, "🛡️-6", "#bae6fd");
+        spawnFloatingIcon(victim.x, victim.y - victim.radius - 14, `🛡️-${shieldDmg}`, "#bae6fd");
       }
 
       const equipped = getPlayerEquippedIcons(attacker);
@@ -4722,27 +4723,36 @@
             }
           }
 
+          const isHeavyShocked = (p.shockTimer || 0) > 0;
           const spd = Math.hypot(p.vx, p.vy);
-          const maxSpd = p.isDuelDashing > 0
-            ? 560
-            : p.dashTrailTimer > 0
-              ? 330
-              : p.sizeMode === "shrink"
-                ? 185
-                : (arenaStage === 3 ? 200 : 148);
+          const maxSpd = isHeavyShocked
+            ? 1200
+            : p.isDuelDashing > 0
+              ? 560
+              : p.dashTrailTimer > 0
+                ? 330
+                : p.sizeMode === "shrink"
+                  ? 185
+                  : (arenaStage === 3 ? 240 : 148);
           if (spd > maxSpd) {
             p.vx = (p.vx / spd) * maxSpd;
             p.vy = (p.vy / spd) * maxSpd;
+          }
+
+          if (isHeavyShocked) {
+            // Ma sát trượt khi bay lùi cực xa
+            p.vx *= (1 - dt * 2.2);
+            p.vy *= (1 - dt * 2.2);
           }
 
           p.x += p.vx * dt;
           p.y += p.vy * dt;
 
           const pad = p.radius + 14;
-          if (p.x < pad) { p.x = pad; p.vx = Math.abs(p.vx); }
-          if (p.x > w - pad) { p.x = w - pad; p.vx = -Math.abs(p.vx); }
-          if (p.y < pad) { p.y = pad; p.vy = Math.abs(p.vy); }
-          if (p.y > h - pad) { p.y = h - pad; p.vy = -Math.abs(p.vy); }
+          if (p.x < pad) { p.x = pad; p.vx = Math.abs(p.vx) * 0.45; }
+          if (p.x > w - pad) { p.x = w - pad; p.vx = -Math.abs(p.vx) * 0.45; }
+          if (p.y < pad) { p.y = pad; p.vy = Math.abs(p.vy) * 0.45; }
+          if (p.y > h - pad) { p.y = h - pad; p.vy = -Math.abs(p.vy) * 0.45; }
 
           // Check Map Power-up Item Pickups (Stacks up to 2 items simultaneously!)
           for (let k = brItems.length - 1; k >= 0; k--) {
@@ -4890,22 +4900,22 @@
                 });
                 playElectricZap(540, 180, 0.14);
                 if (a.isDuelDashing > 0) {
-                  knockOnB = b.sizeMode === "giant" ? 0 : 460;
+                  knockOnB = b.sizeMode === "giant" ? 0 : 520;
                   const bGiantMult = b.sizeMode === "giant" ? 0.70 : 1.0;
-                  const dVal = Math.round((b.shieldTimer > 0 ? 3 : 8) * bGiantMult); // Giảm dame đòn lao vào từ 15/5 xuống 8/3 HP
+                  const dVal = Math.round((b.shieldTimer > 0 ? 7 : 14) * bGiantMult); // Tăng dame húc lên 14/7 HP, giảm miễn giáp
                   b.hp -= dVal;
                   b.shockTimer = 0.38;
                   const tagCol = a.duelSide === "red" ? "#fecdd3" : "#bae6fd";
-                  spawnFloatingIcon(b.x, b.y - 18, b.sizeMode === "giant" ? `🍄 -${dVal} (KHÔNG LÙI)` : `💥 -${dVal}`, tagCol);
+                  spawnFloatingIcon(b.x, b.y - 18, b.sizeMode === "giant" ? `🍄 -${dVal} (KHÔNG LÙI)` : (b.shieldTimer > 0 ? `🛡️ -${dVal}` : `⚡ HÚC! -${dVal}`), tagCol);
                 }
                 if (b.isDuelDashing > 0) {
-                  knockOnA = a.sizeMode === "giant" ? 0 : 460;
+                  knockOnA = a.sizeMode === "giant" ? 0 : 520;
                   const aGiantMult = a.sizeMode === "giant" ? 0.70 : 1.0;
-                  const dVal = Math.round((a.shieldTimer > 0 ? 3 : 8) * aGiantMult); // Giảm dame đòn lao vào từ 15/5 xuống 8/3 HP
+                  const dVal = Math.round((a.shieldTimer > 0 ? 7 : 14) * aGiantMult); // Tăng dame húc lên 14/7 HP, giảm miễn giáp
                   a.hp -= dVal;
                   a.shockTimer = 0.38;
                   const tagCol = b.duelSide === "red" ? "#fecdd3" : "#bae6fd";
-                  spawnFloatingIcon(a.x, a.y - 18, a.sizeMode === "giant" ? `🍄 -${dVal} (KHÔNG LÙI)` : `💥 -${dVal}`, tagCol);
+                  spawnFloatingIcon(a.x, a.y - 18, a.sizeMode === "giant" ? `🍄 -${dVal} (KHÔNG LÙI)` : (a.shieldTimer > 0 ? `🛡️ -${dVal}` : `⚡ HÚC! -${dVal}`), tagCol);
                 }
               } else if (arenaStage >= 2) {
                 const midX = (a.x + b.x) / 2;
@@ -5103,8 +5113,8 @@
               const hitAng = Math.atan2(kb.vy, kb.vx);
               const isShielded = target.shieldTimer > 0;
               const isGiant = target.sizeMode === "giant";
-              const dmg = isShielded ? 6 : (isGiant ? 10 : 15);
-              const knock = isShielded ? 135 : 290;
+              const dmg = isShielded ? 10 : (isGiant ? 15 : 20); // Tăng dame chưởng lên 20 HP, giảm miễn giáp còn 10 HP
+              const knock = isShielded ? 190 : 380;
 
               target.hp -= dmg;
               if (!isGiant) {
@@ -5121,7 +5131,7 @@
               spawnFloatingIcon(
                 target.x,
                 target.y - target.radius - 14,
-                isShielded ? "🛡️ĐỠ CHƯỞNG" : (isGiant ? `🍄 -${dmg} (KHÔNG LÙI)` : (kb.side === "red" ? "🔥CHƯỞNG ĐỎ!" : "❄️CHƯỞNG XANH!")),
+                isShielded ? "🛡️ -10 HP" : (isGiant ? `🍄 -${dmg} (KHÔNG LÙI)` : (kb.side === "red" ? `🔥 -${dmg} HP` : `❄️ -${dmg} HP`)),
                 isShielded ? "#bae6fd" : (kb.side === "red" ? "#fecaca" : "#bae6fd")
               );
               removed = true;
