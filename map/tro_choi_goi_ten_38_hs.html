@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Battle Royale Gọi Tên Học Sinh — Vòng Bo Điện Từ (38 Học Sinh)</title>
+  <title>Battle Royale Gọi Tên Học Sinh — Vòng Bo Điện Từ (28 Học Sinh)</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet" />
   <style>
@@ -155,7 +155,7 @@
             </span>
           </div>
           <p id="headerStatusText" class="text-xs sm:text-sm font-bold text-slate-600">
-            Sĩ số: 38 chiến binh • Chưa gọi: 38 em
+            Sĩ số: 28 chiến binh • Chưa gọi: 28 em
           </p>
         </div>
       </div>
@@ -191,7 +191,7 @@
 
         <!-- Roster & Progress Drawer Button -->
         <button id="openRosterModalBtn" type="button" class="cartoon-btn px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-black bg-amber-300 text-indigo-950 flex items-center gap-1.5">
-          <span>📋 Tiến độ (<span id="calledCountBadge">0</span>/<span id="totalCountBadge">38</span>)</span>
+          <span>📋 Tiến độ (<span id="calledCountBadge">0</span>/<span id="totalCountBadge">28</span>)</span>
         </button>
 
         <!-- Edit Class List Button -->
@@ -209,7 +209,7 @@
         <div class="flex items-center gap-2 flex-wrap">
           <div class="cartoon-card bg-rose-500 text-white px-3.5 py-1.5 flex items-center gap-2 font-black text-xs sm:text-sm">
             <span class="w-2.5 h-2.5 rounded-full bg-yellow-300 animate-ping"></span>
-            <span>CÒN TRÊN SÂN: <span id="brAliveCount" class="text-yellow-200 text-base">38</span>/<span id="brTotalCount">38</span></span>
+            <span>CÒN TRÊN SÂN: <span id="brAliveCount" class="text-yellow-200 text-base">28</span>/<span id="brTotalCount">28</span></span>
           </div>
 
           <div id="brZonePhaseBadge" class="cartoon-card bg-cyan-300 text-indigo-950 px-3.5 py-1.5 font-black text-xs sm:text-sm flex items-center gap-1.5">
@@ -253,8 +253,8 @@
             </select>
           </div>
 
-          <button id="resetCalledBtn" type="button" class="cartoon-btn px-3 py-1.5 rounded-xl bg-white hover:bg-rose-100 text-rose-600 text-xs sm:text-sm font-black" title="Đặt lại toàn bộ 38 học sinh">
-            🔄 Đặt lại 38/38
+          <button id="resetCalledBtn" type="button" class="cartoon-btn px-3 py-1.5 rounded-xl bg-white hover:bg-rose-100 text-rose-600 text-xs sm:text-sm font-black" title="Đặt lại toàn bộ 28 học sinh">
+            🔄 Đặt lại 28/28
           </button>
 
           <button id="quickFullscreenBtn" type="button" class="cartoon-btn px-3 py-1.5 rounded-xl bg-indigo-950 text-amber-300 text-xs sm:text-sm font-black flex items-center gap-1" title="Bật/Tắt chế độ F11 Toàn màn hình trò chơi chính">
@@ -316,7 +316,7 @@
 
         <!-- Bottom Right Remaining Indicator -->
         <div class="absolute bottom-3 right-3 pointer-events-none bg-amber-300 border-2 border-[#1e1b4b] rounded-xl px-3 py-1 text-xs font-black text-indigo-950 shadow-md">
-          Chưa trả bài: <span id="remainingCountText">38</span>/<span id="totalStudentsText">38</span> HS
+          Chưa trả bài: <span id="remainingCountText">28</span>/<span id="totalStudentsText">28</span> HS
         </div>
 
         <!-- FINAL ZOOM WINNER OVERLAY CONTROLS (Appears only after camera zooms in on winner!) -->
@@ -357,7 +357,7 @@
     <div class="cartoon-panel w-full max-w-3xl p-5 sm:p-6 flex flex-col gap-4 max-h-[90vh]">
       <div class="flex items-center justify-between border-b-2 border-amber-200 pb-3">
         <div>
-          <h3 class="text-lg sm:text-xl font-black text-indigo-950">📋 Tiến Độ Trả Bài &amp; Điểm Danh 38 Học Sinh</h3>
+          <h3 class="text-lg sm:text-xl font-black text-indigo-950">📋 Tiến Độ Trả Bài &amp; Điểm Danh 28 Học Sinh</h3>
           <p class="text-xs font-bold text-slate-600">Bấm vào tên học sinh bất kỳ để đánh dấu Đã gọi / Vắng mặt (sẽ không xuất hiện trên đảo).</p>
         </div>
         <button id="closeRosterModalBtn" type="button" class="cartoon-btn w-9 h-9 rounded-xl bg-rose-400 text-white font-black">✕</button>
@@ -367,7 +367,7 @@
       <div class="flex flex-col gap-1.5">
         <div class="flex justify-between text-xs sm:text-sm font-black">
           <span class="text-emerald-700">Đã lên bảng: <span id="calledCountSidebar">0</span> em</span>
-          <span class="text-amber-700">Còn trên đảo: <span id="uncalledCountSidebar">38</span> em</span>
+          <span class="text-amber-700">Còn trên đảo: <span id="uncalledCountSidebar">28</span> em</span>
         </div>
         <div class="w-full bg-amber-100 h-4 rounded-full overflow-hidden border-2 border-[#1e1b4b]">
           <div id="calledProgressBar" class="bg-gradient-to-r from-emerald-400 to-amber-400 h-full transition-all duration-300" style="width: 0%"></div>
@@ -421,7 +421,7 @@
       <textarea id="studentListTextarea" rows="10" class="w-full bg-white border-3 border-[#1e1b4b] rounded-2xl p-3.5 text-xs sm:text-sm text-indigo-950 font-bold focus:outline-none custom-scrollbar" style="border: 3px solid #1e1b4b;" placeholder="Dán mỗi tên học sinh trên 1 dòng (cho phép tên dài)..."></textarea>
 
       <div class="flex items-center justify-between pt-1">
-        <span id="textareaLineCount" class="text-xs sm:text-sm font-extrabold text-slate-700">Đang có: <strong class="text-rose-600">38</strong> học sinh</span>
+        <span id="textareaLineCount" class="text-xs sm:text-sm font-extrabold text-slate-700">Đang có: <strong class="text-rose-600">28</strong> học sinh</span>
         <div class="flex items-center gap-2">
           <button id="cancelListModalBtn" type="button" class="cartoon-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-black bg-slate-200 text-slate-800">
             Hủy
@@ -761,17 +761,16 @@
     }
 
     // ==========================================
-    // 5. INITIALIZATION & STORAGE
+    // 5. INITIALIZATION & STORAGE (LUÔN DÙNG DANH SÁCH MẶC ĐỊNH KHI RELOAD)
     // ==========================================
     function loadInitialStudents() {
-      let savedNames = null;
+      // Xóa bỏ hoàn toàn bộ nhớ lưu cũ trong localStorage để khi reload luôn hiển thị danh sách 28 học sinh mặc định
       try {
-        const raw = localStorage.getItem("classroom_students_v4");
-        if (raw) savedNames = JSON.parse(raw);
+        localStorage.removeItem("classroom_students_v4");
+        localStorage.removeItem("classroom_students");
       } catch (e) {}
 
-      const list = Array.isArray(savedNames) && savedNames.length > 0 ? savedNames : DEFAULT_CLASS_STUDENTS;
-      setStudentsFromNames(list);
+      setStudentsFromNames(DEFAULT_CLASS_STUDENTS);
     }
 
     function setStudentsFromNames(nameList) {
@@ -787,8 +786,10 @@
           skinId: idx % TOTAL_SKINS
         };
       });
+      // Tuyệt đối không lưu vào localStorage để việc thay đổi danh sách trên web không ảnh hưởng đến danh sách mặc định khi reload
       try {
-        localStorage.setItem("classroom_students_v4", JSON.stringify(students.map(s => s.name)));
+        localStorage.removeItem("classroom_students_v4");
+        localStorage.removeItem("classroom_students");
       } catch (e) {}
       renderAll();
     }
@@ -4335,12 +4336,12 @@
       const pool = getActiveStudents();
       if (rule === "duel") {
         if (pool.length < 2) {
-          showToast("Cần ít nhất 2 học sinh để đấu 1vs1! Hãy bấm 'Đặt lại 38/38'.");
+          showToast(`Cần ít nhất 2 học sinh để đấu 1vs1! Hãy bấm 'Đặt lại ${students.length}/${students.length}'.`);
           return;
         }
       } else {
         if (pool.length === 0) {
-          showToast("Tất cả học sinh đều đã được gọi! Hãy bấm 'Đặt lại 38/38'.");
+          showToast(`Tất cả học sinh đều đã được gọi! Hãy bấm 'Đặt lại ${students.length}/${students.length}'.`);
           return;
         }
       }
@@ -5467,7 +5468,7 @@
         callHistory = [];
         zoomWinnerPlayer = null;
         renderAll();
-        showToast("🔄 Đã đưa đủ 38 chiến binh quay lại Đảo Sinh Tồn!");
+        showToast(`🔄 Đã đưa đủ ${students.length} chiến binh quay lại Đảo Sinh Tồn!`);
       });
 
       // Roster Modal
@@ -5531,7 +5532,7 @@
         }
         setStudentsFromNames(lines);
         closeListModal();
-        showToast(`✅ Đã cập nhật danh sách ${lines.length} chiến binh!`);
+        showToast(`✅ Đã cập nhật ${lines.length} chiến binh (tạm thời cho phiên này, reload web sẽ khôi phục danh sách mặc định)!`);
       });
 
       window.addEventListener("resize", () => {
