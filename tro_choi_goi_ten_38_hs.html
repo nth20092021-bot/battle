@@ -527,6 +527,7 @@
     let arenaStage = 1;
     let stageTransitionFlash = 0;
     let screenShake = 0;
+    let hitStopTimer = 0; // Thời gian khựng màn hình ~0.5s tạo uy lực đòn chém kiếm 1v1 khi không có khiên
     let duelIntroState = null; // { timer, totalDuration: 2.6, p1, p2 }
     let brPlayers = [];
     let brItems = [];
@@ -1272,16 +1273,77 @@
       }
 
       if (victim.shieldTimer <= 0) {
-        // Giảm sát thương Kiếm từ 24 xuống 18 HP
-        victim.hp -= 18;
-        victim.shockTimer = 0.38;
-        victim.vx = Math.cos(angle) * slashKnockback;
-        victim.vy = Math.sin(angle) * slashKnockback;
-        attacker.vx -= Math.cos(angle) * 90;
-        attacker.vy -= Math.sin(angle) * 90;
-        spawnFloatingIcon(victim.x, victim.y - victim.radius - 14, "⚔️-18", "#fde047");
+        if (arenaStage === 3) {
+          // ==========================================
+          // ĐÒN TRẢM KIẾM CHIẾN QUYẾT 1V1 (KHÔNG KHIÊN ĐỠ)
+          // ==========================================
+          const isRed = attacker.duelSide === "red";
+          const strikeColor = isRed ? "#ef4444" : "#00f5d4";
+          const strikeAlphaPrefix = isRed ? "rgba(239, 68, 68, " : "rgba(56, 189, 248, ";
+
+          // 1. Khựng màn hình 0.5s tạo uy lực (Hit-stop Frame Freeze)
+          hitStopTimer = 0.5;
+
+          // 2. Rung chấn màn hình tạo sức nặng đòn chém
+          screenShake = 14;
+
+          // 3. Giật sét theo màu đội tấn công (Đội đỏ sét đỏ, Đội xanh sét xanh)
+          for (let a = 0; a < 8; a++) {
+            const aAng = Math.random() * Math.PI * 2;
+            const aLen = 42 + Math.random() * 56;
+            brElectricArcs.push({
+              x1: victim.x,
+              y1: victim.y,
+              x2: victim.x + Math.cos(aAng) * aLen,
+              y2: victim.y + Math.sin(aAng) * aLen,
+              color: strikeColor
+            });
+          }
+
+          // 4. Sóng xung kích phân cực màu phe tấn công
+          brShockwaves.push({
+            x: victim.x,
+            y: victim.y,
+            r: 10,
+            maxR: 95,
+            alpha: 1.0,
+            color: strikeAlphaPrefix
+          });
+
+          // 5. Bùng nổ hạt tia lửa theo màu sét của phe chém
+          spawnCartoonBurst(victim.x, victim.y, strikeColor, 20, true);
+
+          // 6. Đòn đánh làm đối thủ bị đẩy văng ra CỰC XA (Extreme Knockback)
+          const extremeKnock = 820;
+          victim.hp -= 20;
+          victim.shockTimer = 0.55;
+          victim.vx = Math.cos(angle) * extremeKnock;
+          victim.vy = Math.sin(angle) * extremeKnock;
+          attacker.vx -= Math.cos(angle) * 70;
+          attacker.vy -= Math.sin(angle) * 70;
+
+          // Âm thanh uy lực
+          playElectricZap(isRed ? 420 : 560, isRed ? 80 : 110, 0.28);
+          playBoing(110);
+
+          spawnFloatingIcon(
+            victim.x,
+            victim.y - victim.radius - 18,
+            isRed ? "⚡⚔️ HỎA TRẢM! -20" : "⚡⚔️ LÔI TRẢM! -20",
+            isRed ? "#fecaca" : "#bae6fd"
+          );
+        } else {
+          // Map 1 & Map 2 khi không có Khiên
+          victim.hp -= 18;
+          victim.shockTimer = 0.38;
+          victim.vx = Math.cos(angle) * slashKnockback;
+          victim.vy = Math.sin(angle) * slashKnockback;
+          attacker.vx -= Math.cos(angle) * 90;
+          attacker.vy -= Math.sin(angle) * 90;
+          spawnFloatingIcon(victim.x, victim.y - victim.radius - 14, "⚔️-18", "#fde047");
+        }
       } else {
-        // Khi có Khiên: giảm sát thương Kiếm từ 10 xuống chỉ còn 6 HP!
+        // Khi có Khiên: giảm sát thương Kiếm từ 10 xuống chỉ còn 6 HP, không giật sét, không khựng hình!
         victim.hp -= 6;
         victim.shockTimer = 0.24;
         const shieldedKnock = arenaStage >= 2 ? slashKnockback * 0.72 : 120;
@@ -1460,10 +1522,10 @@
         p.swordCharges = 0;
         p.shockTimer = 0;
         p.duelSide = idx === 0 ? "red" : "blue"; // Phe Đỏ (Trái) vs Phe Xanh (Phải)
-        p.kiBlastCooldown = idx === 0 ? 1.0 : 2.5;   // Chiêu bắn chưởng hồi 4.0s (delay ban đầu 1.0s / 2.5s)
+        p.kiBlastCooldown = idx === 0 ? 0.8 : 2.0;   // Chiêu bắn chưởng hồi 3.5s (delay ban đầu 0.8s / 2.0s)
         p.duelDashCooldown = idx === 0 ? 0.8 : 1.8; // Chiêu lướt hồi 2.0s
         p.shootCooldown = 0;
-        p.dodgeCooldown = 0; // Hồi sẵn sàng cho cả 2 khi vào trận theo đúng yêu cầu (hồi 4.5s)!
+        p.dodgeCooldown = 0; // Hồi sẵn sàng cho cả 2 khi vào trận theo đúng yêu cầu (hồi 4.0s)!
         p.isDuelDashing = 0;
         p.isDodging = 0;
         p.headNotice = null; // Tuyệt đối không để bong bóng tròn che khuất nhân vật!
@@ -1662,6 +1724,7 @@
       brShockwaves = [];
       brElectricArcs = [];
       brAirdrop = null;
+      hitStopTimer = 0;
 
       startIdleLoop();
     }
@@ -1707,7 +1770,7 @@
       ctx.fill();
 
       // 1B. ĐĨA MA TRẬN HÀO QUANG VÕ THẦN DƯỚI CHÂN CHO 2 ĐẤU SĨ 1V1 (SUPREME SUMMONING RUNIC MATRIX)
-      if (arenaStage === 3 && p.duelSide && !isZoomedWinner) {
+      if ((arenaStage === 3 || isZoomedWinner) && p.duelSide) {
         const isRed = p.duelSide === "red";
         ctx.save();
         ctx.translate(0, bounce * 0.2);
@@ -1809,7 +1872,7 @@
       ctx.scale(scaleX, scaleY);
 
       // 1C. HÀO QUANG ĐỎ & HÀO QUANG XANH RỰC RỠ CUỒN CUỘN CHO 2 ĐẤU SĨ 1V1 (SUPER SAIYAN GOD KI BATTLE AURA)
-      if (arenaStage === 3 && p.duelSide && !isZoomedWinner) {
+      if ((arenaStage === 3 || isZoomedWinner) && p.duelSide) {
         const isRed = p.duelSide === "red";
         const isDashing = (p.isDuelDashing || 0) > 0;
         const isDodging = (p.isDodging || 0) > 0;
@@ -2442,7 +2505,7 @@
         }
       }
 
-      // 11B. 1v1 DASH SKILL, CHƯỞNG & SKILL NÉ GAUGE (Hiển thị Lướt 2s • Chưởng 4s • Né 4.5s)
+      // 11B. 1v1 DASH SKILL, CHƯỞNG & SKILL NÉ GAUGE (Hiển thị Lướt 2.0s • Chưởng 3.5s • Né 4.0s)
       if (arenaStage === 3 && p.duelSide && !isZoomedWinner) {
         const isRed = p.duelSide === "red";
         const dashCd = Math.max(0, p.duelDashCooldown || 0);
@@ -2451,6 +2514,7 @@
         const isDashing = (p.isDuelDashing || 0) > 0;
         const isDodging = (p.isDodging || 0) > 0;
         const dodgeCd = Math.max(0, p.dodgeCooldown || 0);
+        const kiCd = Math.max(0, p.kiBlastCooldown || 0);
 
         const skW = 64;
         const skH = 6;
@@ -2475,25 +2539,24 @@
         ctx.fillStyle = fillCol;
         ctx.fillRect(skX, skY, skW * dashPct, skH);
 
-        // Chữ hiển thị kỹ năng và số giây hồi chiêu (khoảng cách rộng rãi, không đè thanh máu)
+        // Chữ hiển thị kỹ năng và số giây hồi chiêu thực (Lướt 2s • Chưởng 3.5s • Né 4s)
         ctx.font = "900 8.5px Nunito, sans-serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "bottom";
+
+        const dashLabel = isReady ? "⚡LƯỚT" : `⚡${dashCd.toFixed(1)}s`;
+        const shootLabel = kiCd <= 0 ? "🔥Chưởng" : `🔥${kiCd.toFixed(1)}s`;
+        const dodgeLabel = dodgeCd <= 0 ? "💨Né" : `💨${dodgeCd.toFixed(1)}s`;
+
         if (isDashing) {
           ctx.fillStyle = isRed ? "#fca5a5" : "#facc15";
           ctx.fillText("⚡ PHI THÂN!", p.x, skY - 2.5);
         } else if (isDodging) {
           ctx.fillStyle = isRed ? "#fca5a5" : "#67e8f9";
           ctx.fillText("💨 NÉ TRƯỞNG!", p.x, skY - 2.5);
-        } else if (isReady) {
-          ctx.fillStyle = isRed ? "#fca5a5" : "#7dd3fc";
-          const dLabel = dodgeCd <= 0 ? "Né sẵn" : `Né ${dodgeCd.toFixed(1)}s`;
-          ctx.fillText(`⚡LƯỚT SẴN • 💨${dLabel}`, p.x, skY - 2.5);
         } else {
-          ctx.fillStyle = "#e2e8f0";
-          const shootLabel = (p.kiBlastCooldown || 0) <= 0 ? "🔥Chưởng" : `🔥${(p.kiBlastCooldown || 0).toFixed(1)}s`;
-          const dodgeLabel = dodgeCd <= 0 ? "Né" : `💨${dodgeCd.toFixed(1)}s`;
-          ctx.fillText(`⚡${dashCd.toFixed(1)}s • ${shootLabel} • ${dodgeLabel}`, p.x, skY - 2.5);
+          ctx.fillStyle = isReady ? (isRed ? "#fca5a5" : "#7dd3fc") : "#e2e8f0";
+          ctx.fillText(`${dashLabel} • ${shootLabel} • ${dodgeLabel}`, p.x, skY - 2.5);
         }
       }
 
@@ -2653,7 +2716,7 @@
       ctx.lineTo(x2, y2);
       ctx.strokeStyle = color;
       ctx.lineWidth = 3;
-      ctx.shadowColor = "#fde047";
+      ctx.shadowColor = color;
       ctx.shadowBlur = 10;
       ctx.stroke();
       ctx.restore();
@@ -3632,12 +3695,10 @@
         drawElectricStormZone(ctx, brZone.x, brZone.y, brZone.r, nowMs);
       }
 
-      // 5. Active Lightning Zaps from Ring to Players outside Safe Zone
-      if (arenaStage !== 3) {
-        brElectricArcs.forEach(arc => {
-          drawLightningBolt(ctx, arc.x1, arc.y1, arc.x2, arc.y2, "#fde047");
-        });
-      }
+      // 5. Active Lightning Zaps (vẽ cả vòng bo lẫn tia sét đòn chém kiếm 1v1)
+      brElectricArcs.forEach(arc => {
+        drawLightningBolt(ctx, arc.x1, arc.y1, arc.x2, arc.y2, arc.color || "#fde047");
+      });
 
       // 6. Cartoon Shockwaves & Sword Slash Crescent Arcs
       brShockwaves.forEach(sw => {
@@ -3964,6 +4025,7 @@
       brActive = false;
       isBusy = false;
       duelIntroState = null;
+      hitStopTimer = 0;
       if (typeof screenShake !== "undefined") screenShake = 0;
       winnerRevealAlpha = 0;
       brProjectiles = [];
@@ -4170,6 +4232,15 @@
             // Giữ lại duelVsBanner trên đỉnh màn hình để xem thanh máu suốt trận 1v1!
           }
 
+          drawBattleRoyaleScene(now);
+          brAnimId = requestAnimationFrame(stepArena);
+          return;
+        }
+
+        // Hit-stop Frame Freeze (~0.5s khựng hình tạo uy lực khi trảm kiếm không khiên ở 1v1)
+        if (hitStopTimer > 0) {
+          hitStopTimer -= dt;
+          stageStartTime += dt * 1000;
           drawBattleRoyaleScene(now);
           brAnimId = requestAnimationFrame(stepArena);
           return;
@@ -4391,7 +4462,7 @@
               });
 
               if (incomingProj) {
-                p.dodgeCooldown = 4.5; // Hồi chiêu né chưởng đúng 4.5s theo yêu cầu
+                p.dodgeCooldown = 4.0; // Hồi chiêu né chưởng đúng 4.0s theo yêu cầu
                 p.isDodging = 0.38;
                 p.dashTrailTimer = 0.55;
 
@@ -4432,8 +4503,8 @@
                 const rival = aliveList.find(o => o !== p);
                 if (rival) {
                   shootKiBlast(p, rival);
-                  // Hồi chiêu bắn chưởng đúng 4.0s theo yêu cầu
-                  p.kiBlastCooldown = 4.0;
+                  // Hồi chiêu bắn chưởng đúng 3.5s theo yêu cầu
+                  p.kiBlastCooldown = 3.5;
                 }
               }
             }
