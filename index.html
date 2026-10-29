@@ -219,7 +219,7 @@
 
         <!-- ICON-ONLY SKILL DOCK (Max 2 items per character, Stage 3 prioritizes Sword & Shield!) -->
         <div class="flex items-center gap-1.5 bg-amber-100/90 border-2 border-[#1e1b4b] rounded-2xl px-2.5 py-1">
-          <span class="skill-icon-pill bg-yellow-300" title="⚔️ Kiếm Ánh Sáng (3 lần chém đơn mục tiêu - Ưu tiên Vòng Cuối)">⚔️</span>
+          <span class="skill-icon-pill bg-yellow-300" title="⚔️ Kiếm Ánh Sáng (1 lần chém đơn mục tiêu - Ưu tiên Vòng Cuối)">⚔️</span>
           <span class="skill-icon-pill bg-sky-200" title="🛡️ Khiên Bảo Vệ (Giảm 60% sát thương & đẩy lùi - Ưu tiên Vòng Cuối)">🛡️</span>
           <span class="skill-icon-pill bg-amber-200" title="🔦 Đèn Pin Thu Nhỏ">🔦</span>
           <span class="skill-icon-pill bg-purple-200" title="👻 Hồn Ma Xuyên Thấu">👻</span>
@@ -311,7 +311,7 @@
 
         <!-- Bottom Left Interactive Tip -->
         <div id="arenaTipBox" class="absolute bottom-3 left-3 pointer-events-none bg-white/90 border-2 border-[#1e1b4b] rounded-xl px-3 py-1 text-xs font-extrabold text-indigo-950 shadow-md flex items-center gap-1.5">
-          <span>⚡ Chung Kết 1v1: Lướt húc (hồi 2s) • Bắn chưởng (hồi 4s) • Né chưởng lướt ngang (hồi 4.5s)!</span>
+          <span>⚡ Chung Kết 1v1: Lướt húc (hồi 2s) • Bắn chưởng (hồi 3s) • Né chưởng lướt ngang (hồi 3.5s)!</span>
         </div>
 
         <!-- Bottom Right Remaining Indicator -->
@@ -496,7 +496,7 @@
 
     // 9 Skill Items (Displayed purely as Icons in UI and on Canvas!)
     const ITEM_TYPES = [
-      { id: "sword",    icon: "⚔️", badge: "⚔️×3", bg: "#fde047", border: "#b45309" },
+      { id: "sword",    icon: "⚔️", badge: "⚔️×1", bg: "#fde047", border: "#b45309" },
       { id: "shield",   icon: "🛡️", badge: "🛡️",   bg: "#bae6fd", border: "#0284c7" },
       { id: "shrink",   icon: "🔦", badge: "🔦",   bg: "#fef08a", border: "#ca8a04" },
       { id: "ghost",    icon: "👻", badge: "👻",   bg: "#e9d5ff", border: "#7e22ce" },
@@ -1167,7 +1167,7 @@
     // Helper: Get active equipped item icons (Max 2 simultaneous items!)
     function getPlayerEquippedIcons(p) {
       const icons = [];
-      if (p.swordCharges > 0) icons.push(`⚔️${p.swordCharges}`);
+      if (p.swordCharges > 0) icons.push(p.swordCharges > 1 ? `⚔️${p.swordCharges}` : "⚔️");
       if (p.shieldTimer > 0) icons.push("🛡️");
       if (p.hasHammer) icons.push("🔨");
       if (p.ghostTimer > 0) icons.push("👻");
@@ -1183,7 +1183,7 @@
 
       switch (item.type) {
         case "sword":
-          player.swordCharges = 3;
+          player.swordCharges = 1;
           player.swordCooldown = 0.15;
           break;
         case "shrink":
@@ -1556,10 +1556,10 @@
         p.swordCharges = 0;
         p.shockTimer = 0;
         p.duelSide = idx === 0 ? "red" : "blue"; // Phe Đỏ (Trái) vs Phe Xanh (Phải)
-        p.kiBlastCooldown = idx === 0 ? 0.8 : 2.0;   // Chiêu bắn chưởng hồi 3.5s (delay ban đầu 0.8s / 2.0s)
+        p.kiBlastCooldown = idx === 0 ? 0.8 : 2.0;   // Chiêu bắn chưởng hồi 3.0s (delay ban đầu 0.8s / 2.0s)
         p.duelDashCooldown = idx === 0 ? 0.8 : 1.8; // Chiêu lướt hồi 2.0s
         p.shootCooldown = 0;
-        p.dodgeCooldown = 0; // Hồi sẵn sàng cho cả 2 khi vào trận theo đúng yêu cầu (hồi 4.0s)!
+        p.dodgeCooldown = 0; // Hồi sẵn sàng cho cả 2 khi vào trận theo đúng yêu cầu (hồi 3.5s)!
         p.isDuelDashing = 0;
         p.isDodging = 0;
         p.headNotice = null; // Tuyệt đối không để bong bóng tròn che khuất nhân vật!
@@ -2598,7 +2598,7 @@
         }
       }
 
-      // 11B. 1v1 DASH SKILL, CHƯỞNG & SKILL NÉ GAUGE (Hiển thị Lướt 2.0s • Chưởng 3.5s • Né 4.0s)
+      // 11B. 1v1 DASH SKILL, CHƯỞNG & SKILL NÉ GAUGE (Hiển thị Lướt 2.0s • Chưởng 3.0s • Né 3.5s)
       if (arenaStage === 3 && p.duelSide && !isZoomedWinner) {
         const isRed = p.duelSide === "red";
         const dashCd = Math.max(0, p.duelDashCooldown || 0);
@@ -2632,7 +2632,7 @@
         ctx.fillStyle = fillCol;
         ctx.fillRect(skX, skY, skW * dashPct, skH);
 
-        // Chữ hiển thị kỹ năng và số giây hồi chiêu thực (Lướt 2s • Chưởng 3.5s • Né 4s)
+        // Chữ hiển thị kỹ năng và số giây hồi chiêu thực (Lướt 2s • Chưởng 3.0s • Né 3.5s)
         ctx.font = "900 8.5px Nunito, sans-serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "bottom";
@@ -4705,7 +4705,7 @@
               });
 
               if (incomingProj) {
-                p.dodgeCooldown = 4.0; // Hồi chiêu né chưởng đúng 4.0s theo yêu cầu
+                p.dodgeCooldown = 3.5; // Hồi chiêu né chưởng đúng 3.5s theo yêu cầu
                 p.isDodging = 0.38;
                 p.dashTrailTimer = 0.55;
 
@@ -4747,7 +4747,7 @@
                 if (rival) {
                   shootKiBlast(p, rival);
                   // Hồi chiêu bắn chưởng đúng 3.5s theo yêu cầu
-                  p.kiBlastCooldown = 3.5;
+                  p.kiBlastCooldown = 3.0;
                 }
               }
             }
